@@ -1,0 +1,16 @@
+extends base 
+
+block bar
+   form.form-inline
+      .form-group
+         label(for='weekList') Week:&nbsp
+         select#weekList.form-control
+      .form-group
+         label(for='team1List') Team 1:&nbsp
+         select#team1List.form-control
+            option none
+      .form-group
+         label(for='team2List') Team 2:&nbsp
+         select#team2List.form-control
+            option none
+      button#defenseStats.btn.btn-primary Get Stats

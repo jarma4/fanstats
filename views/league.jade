@@ -1,0 +1,30 @@
+extends base 
+
+block bar2
+   form.form-inline
+      .form-group
+         //- legend Choose
+         .radio
+            label
+               input.form-check-input(type='radio', name='leagueRadio' value='0', checked) 
+               | Individual
+         .radio
+            label
+               input.form-check-input(type='radio', name='leagueRadio' value='1') 
+               | League
+      .form-group
+         label(for='managerList') Manager:
+         select#managerList.form-control
+      //- .form-group.input-historical
+      //-    label(for='managerStat') Stat:
+      //-    select#managerStat.form-control
+      //-       option Total Pts
+      //-       option QB
+      //-       option RB
+      //-       option WR+TE
+      //-       option IDP
+      .form-group.input-historical
+         label(for='year') Year:
+         select#yearList.form-control
+      button#getStats.btn.btn-primary #[i.fa.fa-bar-chart.fa-2x]
+      //- button#testBtn.btn.btn-primary Test

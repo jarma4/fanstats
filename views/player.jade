@@ -1,0 +1,17 @@
+extends base 
+
+block bar
+   form.form-inline
+      .form-group
+         label(for='positionList') Position:
+         select#positionList.form-control(autofocus)
+            option WR
+            option RB
+            option TE
+            option QB
+            option DST
+            option K
+      .form-group
+         label(for='playerList') Player:
+         select#playerList.form-control(autofocus)
+      button#playerStats.btn.btn-primary Get Stats

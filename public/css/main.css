@@ -1,0 +1,50 @@
+/*.nodisplay{
+	display: none;
+}
+.center{
+	text-align: center;
+	float: none;
+}
+.right{
+	float: right;
+	margin-top:-5px;
+}
+.input-historical{
+   width: 175px;
+}
+
+.small-inputbox{
+	width: 3em;
+	text-align: center;
+}*/
+.powerbar {
+	background-color: #444;
+	color: white;
+	padding-top: 10px;
+	border-radius: 10px;
+}
+.powerbar label, button {
+	margin-left: 10px;
+}
+
+.grapharea {
+	background-color: rgba(147, 197, 75, .8);
+	color: white;
+	padding-top: 10px;
+	border-radius: 10px;
+}
+.dataarea {
+  height: 500px;
+	/*background-color: rgba(244,124,60,1);*/
+	/*color: white;*/
+	/*padding-top: 10px;*/
+	/*border: solid black 1px;*/
+	border-radius: 10px;
+}
+#dataHeading1, #dataHeading2{
+  font-size: 125%;
+  /*line-height: 200%;*/
+}
+.btn-primary {
+	background-color: #244363;
+}

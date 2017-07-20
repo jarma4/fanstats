@@ -1,8 +1,8 @@
 {
-  "name": "scraper",
+  "name": "fanstats",
   "version": "0.0.1",
   "description": "",
-  "main": "scraper.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,15 +17,14 @@
   },
   "homepage": "https://github.com/jarma4/jarnigan.com#readme",
   "dependencies": {
+    "body-parser": "^1.17.2",
     "cheerio": "^0.19.0",
-    "request": "^2.61.0"
-    "cheerio-advanced-selectors": "^1.1.0",
     "compression": "^1.6.2",
     "express": "^4.13.3",
-    "jade": "^1.11.0",
     "mongoose": "^4.1.11",
-    "promise": "^7.1.1"
+    "node-crontab": "0.0.8",
+    "pug": "^2.0.0-rc.2",
+    "request": "^2.61.0"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

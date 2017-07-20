@@ -43,7 +43,8 @@ function managerTotals(data) {
 
 $('#getStats').on('click', function () {
    event.preventDefault();
-   if ($('#managerList').val() !== 'League') {
+   console.log($('input[name="leagueRadio"]:checked').val());
+   if ($('input[name="leagueRadio"]:checked').val() == 1) {
       $.ajax({
    		type: 'POST',
    		url: '/api/getresults',
@@ -52,8 +53,8 @@ $('#getStats').on('click', function () {
             'year': $('#yearList').val()
          },
    		success:function(retData){
-   		      $('#dataHeading1').text('Manager: '+$('#managerList').val());
-   		      $('#dataHeading2').text('Year: '+$('#yearList').val());
+		      $('#dataHeading1').text('Manager: '+$('#managerList').val());
+		      $('#dataHeading2').text('Year: '+$('#yearList').val());
             // create first table with weekly totals for single manager
             var outp = '<table class="table table-sm table-striped"><tr><th>Wk</th><th>QB</th><th>RB1</th><th>RB2</th><th>WR1</th><th>WR2</th><th>WR3TE</th><th>IDP1</th><th>IDP2</th><th>IDP3</th><th>K</th><th>Tot</th></tr>';
             var totals = managerTotals(retData);
@@ -88,13 +89,15 @@ $('#getStats').on('click', function () {
             console.log('trouble');
    		}
    	});
-   } else if ($('#managerList').val() == 'League' && $('#yearList').val() !== 'All'){    //league wide stats
+   } else {    //league wide stats
       var leagueQb = 0,
       leagueRb = 0,
       leagueWr = 0,
       leagueIdp = 0,
       leagueK = 0,
       leagueTotal = 0;
+      $('#dataHeading1').text('League Totals');
+      $('#dataHeading2').text('Year: '+$('#yearList').val());
       // create table and display, manager rows added later
       var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr><th>Who</th><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr></table>';
       document.getElementById("resultsArea").innerHTML = outp;
@@ -134,39 +137,39 @@ $('#getStats').on('click', function () {
       $.when.apply(undefined, promises).done(function(){
             $('#leagueTable tr:last').after('<tr class="table-danger"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
          });
-   } else {
-      $.ajax({
-   		type: 'POST',
-   		url: '/api/getleaguehistory',
-         data: {
-            'start': 2012,
-            'end': 2015,
-            // 'year': $('#yearList').val()
-         },
-   		success:function(retData){
-            var labels = {
-               xaxis: 'Years',
-               y1axis: 'Points',
-               y2axis: ''
-            },
-            ydata = [],
-            positions = ['QB', 'RB', 'WR', 'IDP', 'K'];
-            // populate 5 position datasets
-            for (var i = 0; i < 4; i++) {
-               ydata.push({
-                  label: positions[i],
-                  type: 'line',
-                  borderColor: chartColors[i],
-                  data: retData[i+1],  // 0 index has xaxis/years
-                  yAxisID: 'left'
-               });
-            }
-            drawChart(1, retData[0], ydata, labels);
-         },
-         error: function(retData){
-            console.log('trouble');
-         }
-      });
+   // } else {
+   //    $.ajax({
+   // 		type: 'POST',
+   // 		url: '/api/getleaguehistory',
+   //       data: {
+   //          'start': 2012,
+   //          'end': 2016,
+   //          // 'year': $('#yearList').val()
+   //       },
+   // 		success:function(retData){
+   //          var labels = {
+   //             xaxis: 'Years',
+   //             y1axis: 'Points',
+   //             y2axis: ''
+   //          },
+   //          ydata = [],
+   //          positions = ['QB', 'RB', 'WR', 'IDP', 'K'];
+   //          // populate 5 position datasets
+   //          for (var i = 0; i < 4; i++) {
+   //             ydata.push({
+   //                label: positions[i],
+   //                type: 'line',
+   //                borderColor: chartColors[i],
+   //                data: retData[i+1],  // 0 index has xaxis/years
+   //                yAxisID: 'left'
+   //             });
+   //          }
+   //          drawChart(1, retData[0], ydata, labels);
+   //       },
+   //       error: function(retData){
+   //          console.log('trouble');
+   //       }
+   //    });
    }
 });
 
@@ -279,12 +282,11 @@ $('#yearList').change(function() {
    getManagers();
 });
 
-$('input[type=radio][name=leagueRadio]').change(function() {
-   console.log($(this).val());
+$('input[name="leagueRadio"]').change(function() {
    if ($(this).val() == 1) {
-      $('#managerList').attr('disabled','disabled');
-   } else {
       $('#managerList').removeAttr('disabled');
+   } else {
+      $('#managerList').attr('disabled','disabled');
    }
 });
 
@@ -450,7 +452,7 @@ $(document).ready(function() {
          for (var i=2009; i<2017; i++)
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2015"]').attr("selected", "selected");
+         $('#yearList option[value="2016"]').attr("selected", "selected");
          getManagers();
          $('#dataHeading').text('Data');
          break;

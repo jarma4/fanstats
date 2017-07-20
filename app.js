@@ -1,5 +1,6 @@
 var express = require('express'),
-   compression = require('compression');
+   compression = require('compression'),
+   crontab = require('node-crontab');
 
 var app = express();
 var routes = require('./routes/index'),
@@ -8,8 +9,19 @@ app.use('/', routes);
 app.use('/api', api);
 app.use(compression());
 app.use('/', express.static(__dirname + '/public'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 app.set('views', './views');
+
+var backupDbCron = crontab.scheduleJob('0 1 * * 4', function () {
+   var now = new Date();
+   var cmd = exec('mongodump -dvcl -uvcl -p$BAF_MONGO -o backup/databases/'+now.getFullYear()+'_'+(now.getMonth()+1)+'_'+now.getDate(), function(error, stdout, stderr) {
+      if (error || stderr) {
+         console.log(error);
+         console.log(stderr);
+      }
+   });
+   console.log('DB backup - '+now);
+});
 
 var server = app.listen(8082, function () {
    console.log('App listening at on port 8082');

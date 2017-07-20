@@ -1,10 +1,10 @@
 var request = require('request'),
-fs = require('fs'),
-cheerio = require('cheerio'),
-// Managers = require('./dbschema').Managers,
-// Players = require('./dbschema').Players,
-League = require('./dbschema').League,
-mongoose = require('mongoose');
+   cheerio = require('cheerio'),
+   fs = require('fs'),
+   // Managers = require('./dbschema').Managers,
+   // Players = require('./dbschema').Players,
+   League = require('./dbschema').League,
+   mongoose = require('mongoose');
 
 var managers = [
    'sergio',
@@ -41,7 +41,7 @@ console.log(yr+' '+target);
    		}, function (err, response, body) {
    			if(!err && response.statusCode === 200) {
    				var $ = cheerio.load(body);
-               if (yr < 2014) {
+               if (yr < 2016) {
                   var rb = 0,
                   wr = 0,
                   idp = 0;
@@ -126,7 +126,7 @@ console.log(yr+' '+target);
       					wr3te: start.first().parent().next().next().next().next().next().children().next().next().next().next().text(),
       					idp1: start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text(),
       					idp2: start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp3: start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text(),
+      					idp3: (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()),
       					k: start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text(),
       					total: $('.totalScore').first().text()
    		         }).save(function(err){

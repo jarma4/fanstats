@@ -11,18 +11,20 @@ var mongoose = require('mongoose'),
 
 mongoose.connect('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
-function scrape(year) {
-   Managers.find({}, function(err, results){
+function scrape(yr) {
+   console.log(yr);
+   Managers.find({start:{$lte: yr}, end:{$gte: yr}}, function(err, results){
       results.forEach(function(manager){
-         for (var week=2;week<14;week++){
-            Scraper.scrapeToDb(manager.num,week, year);
+         for (var week=1;week<14;week++){
+            Scraper.scrapeToDb(manager.num,week, yr);
          }
       });
    });
 }
 
-for (var year=2016;year<2017;year++){
+for (var year=2013;year<2016;year++){
    scrape(year);
+   // Scraper.scrapeToDb(4,8, 2016);
 }
 
 // below goes through players db and calculates score for each record

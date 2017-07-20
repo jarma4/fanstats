@@ -39,6 +39,12 @@ router.post('/getplayers', function(req,res){
    });
 });
 
+router.post('/getmanagers', function(req,res){
+   Managers.find({start:{$lte: req.body.year}, end:{$gte: req.body.year}}, {name: 1},  function(err, managers){
+      res.json(managers);
+   }).sort({name:1});
+});
+
 router.post('/getleaguehistory', function(req,res){
    graphData(Number(req.body.start), Number(req.body.end), [[], [], [], [], [], []]).then(function (data){
       res.json(data);

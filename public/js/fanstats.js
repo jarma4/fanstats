@@ -86,7 +86,7 @@ $('#getStats').on('click', function () {
             drawChart(1, totals.chartWeeks, ydata, labels, false);
    		},
    		error: function(retData){
-            console.log('trouble');
+            console.log('Error getting stats');
    		}
    	});
    } else {    //league wide stats
@@ -230,7 +230,7 @@ $('#playerStats').on('click', function () {
          drawChart(1, weeks, ydata, labels, true, true);
       },
       error: function(retData){
-         console.log('trouble');
+         console.log('Error getting player stats');
       }
    });
 });
@@ -269,7 +269,7 @@ $('#defenseStats').on('click', function(){
                y2axis: ''}, true);
       },
       error: function(retData){
-         console.log('trouble');
+         console.log('Error getting defensive stats');
       }
    });
 });
@@ -322,9 +322,20 @@ function getWeek(date){
 // for Managers page
 function getManagers (){
    $('#managerList').empty();
-   // $('#managerList').append('<option value="League">League</option>');
-   $.each(managers[Number($('#yearList').val())-2009].sort(), function(i,manager){
-      $('#managerList').append('<option value="'+manager+'">'+manager+'</option>');
+   $.ajax({
+		type: 'POST',
+		url: '/api/getmanagers',
+      data: {
+         'year': $('#yearList').val()
+      },
+		success:function(retData){
+         $.each(retData, function(i, manager){
+            $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
+         });
+      },
+      error: function(retData){
+         console.log('Error getting managers');
+      }
    });
 }
 // for Players page

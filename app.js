@@ -1,5 +1,6 @@
 var express = require('express'),
    compression = require('compression'),
+   exec = require('child_process').exec,
    crontab = require('node-crontab');
 
 var app = express();
@@ -12,7 +13,7 @@ app.use('/', express.static(__dirname + '/public'));
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-var backupDbCron = crontab.scheduleJob('0 1 * * 4', function () {
+var backupDbCron = crontab.scheduleJob('0 1 * * 3', function () {
    var now = new Date();
    var cmd = exec('mongodump -dvcl -uvcl -p$BAF_MONGO -o backup/databases/'+now.getFullYear()+'_'+(now.getMonth()+1)+'_'+now.getDate(), function(error, stdout, stderr) {
       if (error || stderr) {

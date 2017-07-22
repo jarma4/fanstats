@@ -22,9 +22,9 @@ function scrape(yr) {
    });
 }
 
-for (var year=2013;year<2016;year++){
+for (var year=2009;year<2012;year++){
    scrape(year);
-   // Scraper.scrapeToDb(4,8, 2016);
+   // Scraper.scrapeToDb(9, year, 2013);
 }
 
 // below goes through players db and calculates score for each record

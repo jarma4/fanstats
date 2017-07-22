@@ -67,14 +67,15 @@ $('#getStats').on('click', function () {
             var ydata = [{
                   label: 'Total Points',
                   type: 'line',
-                  borderColor: 'white',
+                  borderColor: 'blue',
                   data: totals.chartTotals,
                   yAxisID: 'left'
                },
                {
                   label: '3week Avg',
                   type: 'line',
-                  borderColor: 'blue',
+                  borderDash: [10, 5],
+                  borderColor: 'white',
                   data: totals.chartAverage,
                   yAxisID: 'left'
             }],
@@ -83,7 +84,7 @@ $('#getStats').on('click', function () {
                y1axis: '',
                y2axis: '',
             };
-            drawChart(1, totals.chartWeeks, ydata, labels, false);
+            drawChart(1, totals.chartWeeks, ydata, labels, true);
    		},
    		error: function(retData){
             console.log('Error getting stats');
@@ -136,6 +137,19 @@ $('#getStats').on('click', function () {
       });
       $.when.apply(undefined, promises).done(function(){
             $('#leagueTable tr:last').after('<tr class="table-danger"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
+            var ydata = [{
+               label: 'Position Totals',
+               type: 'line',
+               borderColor: 'blue',
+               data: [leagueQb, leagueRb, leagueWr, leagueIdp, leagueK],
+               yAxisID: 'left'
+            }],
+            labels = {
+               xaxis: '',
+               y1axis: '',
+               y2axis: '',
+            };
+            drawChart(1, ['QB', 'RB', 'WR', 'IDP', 'K'], ydata, labels, true);
          });
    // } else {
    //    $.ajax({
@@ -371,17 +385,6 @@ var chart1, chart2,
    nflColors = {
       Atlanta: '#A71930', ARZ: '#97233F', CAR: '#0085CA', CHI: '#0B162A', DAL: '#002244', DET: '#005A8B', GB: '#203731', MIN: '#4F2683', 'New Orleans': '#9F8958', NYG: '#0B2265', PHI: '#004953', SEA: '#69BE28', 'San Francisco': '#AA0000', STL: '#B3995D', TB: '#D50A0A', WAS: '#773141', Baltimore: '#241773', BUF: '#00338D', CIN: '#FB4F14', CLE: '#FB4F14', DEN: '#FB4F14', HOU: '#03202F', KC: '#E31837', JAC: '#006778', IND: '#002C5F', MIA: '#008E97', NE: '#002244', NYJ: '#203731', OAK: '#A5ACAF', PIT: '#FFB612', SD: '#0073CF', TEN: '#4B92DB'
    },
-   // managers per year starting on 2009
-   managers = [
-      ['sergio', 'eric', 'ed', 'kirk', 'john', 'tony', 'tom', 'haynos', 'kevin', 'chuck'],
-      ['sergio', 'eric', 'ed', 'kirk', 'john', 'tony', 'tom', 'kevin', 'chuck', 'steven'],
-      ['sergio', 'eric', 'ed', 'kirk', 'john', 'tony', 'wilke', 'kevin', 'ted', 'strickland', 'ryan', 'aaron'],
-      ['sergio', 'eric', 'ed', 'kirk', 'john', 'tony', 'gary', 'kevin', 'ted', 'brooks', 'ryan', 'aaron'],
-      ['sergio', 'eric', 'ed', 'kirk', 'john', 'tony', 'gary', 'kevin', 'ted', 'brooks', 'ryan', 'aaron'],
-      ['sergio', 'ed', 'kirk', 'john', 'tony', 'gary', 'kevin', 'ted', 'brooks', 'ryan', 'aaron', 'jason'],
-      ['sergio', 'ed', 'kirk', 'john', 'tony', 'gary', 'kevin', 'ted', 'ryan', 'aaron', 'jason', 'firdavs'],
-      ['sergio', 'ed', 'kirk', 'john', 'tony', 'steven', 'kevin', 'ted', 'ryan', 'aaron', 'jason', 'firdavs'],
-   ],
    chartColors = ['orange', 'white', 'cyan', 'green', 'gold'];
 
 function drawChart(num, xaxis, yaxis, axisLabels, zeroAxis, displayY2) {
@@ -449,7 +452,7 @@ $(document).ready(function() {
    // Chart.defaults.global.defaultFontColor = '#fff';
    Chart.defaults.global.elements.line.tension = 0;
    Chart.defaults.global.elements.line.borderWidth = 2;
-   // Chart.defaults.global.elements.line.fill = false;
+   Chart.defaults.global.elements.line.fill = false;
    Chart.defaults.global.responsive = true;
    chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'line');
    // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');

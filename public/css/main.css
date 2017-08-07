@@ -17,15 +17,25 @@
 	width: 3em;
 	text-align: center;
 }*/
+.groupbox {
+    padding: 10px;
+	 margin-top: 10px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+	 border: 2px #ccc solid;
+	 border-radius: 10px;
+ }
+
 .powerbar {
 	background-color: #444;
-	color: white;
-	padding-top: 10px;
+	color: #ccc;
+	/*padding-top: 10px;*/
 	border-radius: 10px;
 }
-.powerbar label, button {
+/*.powerbar label, button {
 	margin-left: 10px;
-}
+}*/
 
 .grapharea {
 	background-color: rgba(147, 197, 75, .8);
@@ -47,4 +57,7 @@
 }
 .btn-primary {
 	background-color: #244363;
+}
+.top {
+	margin-top: 10px;
 }

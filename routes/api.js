@@ -12,7 +12,7 @@ mongoose.connect('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMon
 router = express.Router();
 router.use(bodyParser.urlencoded({ extended: false }));
 
-router.post('/getresults', function(req,res){
+router.post('/getmanagerstats', function(req,res){
    League.find({manager: req.body.manager, year: req.body.year},function(err,results){
       if (err)
          console.log(err);
@@ -114,5 +114,30 @@ function getTotals(plr, yr){
       console.log('QB='+qb+','+qb/total*100+', RB='+rb+','+rb/total*100+', WR='+wr+','+wr/total*100+', IDP='+idp+','+idp/total*100+', K='+k+','+k/total*100+', Total='+total);
    });
 }
+
+function weeklyHigh (yr, wk){
+   return new Promise(function(resolve, reject) {
+      League.find({week: wk, year: yr}, function(err, data){
+         var mgr, high = 0;
+         data.forEach(function(manager) {
+            if (manager.total >high) {
+               high = manager.total;
+               mgr = manager.manager;
+            }
+         });
+         resolve ({high, mgr});
+      });
+   });
+}
+
+router.post('/getminmaxstats', function(req,res){
+   var highs = [];
+   for (i=0; i<13; i++) {
+      highs.push(weeklyHigh(req.body.year, i+1));
+   }
+   Promise.all(highs).then(function(result){
+      res.send(result);
+   });
+});
 
 module.exports = router;

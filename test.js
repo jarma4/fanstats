@@ -22,10 +22,31 @@ function scrape(yr) {
    });
 }
 
-for (var year=2009;year<2012;year++){
-   scrape(year);
-   // Scraper.scrapeToDb(9, year, 2013);
+function weeklyHigh (yr, wk){
+   return new Promise(function(resolve, reject) {
+      League.find({week: wk, year: yr}, function(err, data){
+         var high = 0;
+         data.forEach(function(manager) {
+            if (manager.total >high)
+               high = manager.total;
+         });
+         console.log(high);
+         resolve (high);
+      });
+   });
 }
+
+function yearlyHigh (yr){
+   var highs = [];
+   for (i=0; i<13; i++) {
+      highs.push(weeklyHigh(yr, i+1));
+   }
+   Promise.all(highs).then(function(result){
+      console.log('answer: '+result);
+   });
+}
+
+yearlyHigh(2016);
 
 // below goes through players db and calculates score for each record
 if (0) {

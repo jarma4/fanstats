@@ -110,7 +110,7 @@ function displayManager(){
          var ydata = [{
                label: 'Total Points',
                type: 'line',
-               borderColor: 'blue',
+               borderColor: '#244363',
                data: totals.chartTotals,
                yAxisID: 'left'
             },
@@ -121,13 +121,8 @@ function displayManager(){
                borderColor: 'white',
                data: totals.chartAverage,
                yAxisID: 'left'
-         }],
-         labels = {
-            xaxis: '',
-            y1axis: '',
-            y2axis: '',
-         };
-         drawChart(1, totals.chartWeeks, ydata, labels, true);
+         }];
+         drawChart(1, totals.chartWeeks, ydata, null, true);
       },
       error: function(retData){
          console.log('Error getting stats');
@@ -184,17 +179,12 @@ function displayLeague(){
       $('#leagueTable tr:last').after('<tr class="table-danger"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
       var ydata = [{
          label: 'Position Totals',
-         type: 'line',
-         borderColor: 'blue',
+         type: 'bar',
+         backgroundColor: '#244363',
          data: [leagueQb, leagueRb, leagueWr, leagueIdp, leagueK],
          yAxisID: 'left'
-      }],
-      labels = {
-         xaxis: '',
-         y1axis: '',
-         y2axis: '',
-      };
-      drawChart(1, ['QB', 'RB', 'WR', 'IDP', 'K'], ydata, labels, true);
+      }];
+      drawChart(1, ['QB', 'RB', 'WR', 'IDP', 'K'], ydata, null, true);
    });
 }
 
@@ -206,7 +196,14 @@ function displayMinmax(){
          'year': $('#yearList').val()
       },
       success:function(retData){
-
+         var ydata = [{
+               label: 'Weekly High',
+               type: 'bar',
+               backgroundColor: '#244363',
+               data: retData.highs,
+               yAxisID: 'left'
+            }];
+         drawChart(1, retData.weeks, ydata, null, true);
       },
       error: function(retData){
          console.log('Error getting player stats');
@@ -490,7 +487,7 @@ $(document).ready(function() {
    Chart.defaults.global.elements.line.borderWidth = 2;
    Chart.defaults.global.elements.line.fill = false;
    Chart.defaults.global.responsive = true;
-   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'line');
+   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'bar');
    // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');
    // $('#chartArea').hide();
    // $('#chartArea2').hide();

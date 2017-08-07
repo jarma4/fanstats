@@ -25,24 +25,29 @@ function scrape(yr) {
 function weeklyHigh (yr, wk){
    return new Promise(function(resolve, reject) {
       League.find({week: wk, year: yr}, function(err, data){
-         var high = 0;
+         var high = 0, mgr = '';
          data.forEach(function(manager) {
-            if (manager.total >high)
+            if (manager.total >high) {
                high = manager.total;
+               mgr = manager.manager;
+            }
          });
-         console.log(high);
-         resolve (high);
+         resolve ({high, mgr});
       });
    });
 }
 
 function yearlyHigh (yr){
-   var highs = [];
+   var promises = [], highs = [], managers = [];
    for (i=0; i<13; i++) {
-      highs.push(weeklyHigh(yr, i+1));
+      promises.push(weeklyHigh(yr, i+1));
    }
-   Promise.all(highs).then(function(result){
-      console.log('answer: '+result);
+   Promise.all(promises).then(function(result){
+      result.forEach(function(item){
+         highs.push(item.high);
+         managers.push(item.mgr);
+      });
+      console.log(highs, managers);
    });
 }
 

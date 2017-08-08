@@ -58,6 +58,62 @@ router.post('/getminmaxstats', function(req,res){
    });
 });
 
+router.post('/getleaguehistory', function(req,res){
+   graphData(Number(req.body.start), Number(req.body.end), [[], [], [], [], [], []]).then(function (data){
+      res.json(data);
+   });
+});
+
+function yearlyTotals(year) {
+   return new Promise(function (resolve, reject){
+      var totalQb = 0,
+      totalRb = 0,
+      totalWr = 0,
+      totalIdp = 0,
+      totalK = 0,
+      correction = 1;
+      League.find({year: year}, function(err,data){
+         if (err)
+            reject(err);
+         else {
+            data.forEach(function(rec){
+               totalQb += rec.qb;
+               totalRb += rec.rb1 + rec.rb2;
+               totalWr += rec.wr1 + rec.wr2 + rec.wr3te;
+               totalIdp += ((year == 2011)?rec.dst:rec.idp1+rec.idp2+rec.idp3);
+               totalK += rec.k;
+            });
+            // most years have 12 players, correct if 10
+            if (data.length/13 == 10) {
+               correction = 1.16667;
+               year = year+'*';
+            }
+            resolve([year, totalQb*correction, totalRb*correction, totalWr*correction, totalIdp*correction, totalK*correction]);
+         }
+      }).sort({week:1});
+   });
+}
+
+function graphData(year, end, dataArr) {
+   return new Promise(function (resolve, reject){
+      yearlyTotals(year).then(function(result){
+         dataArr[5].push(result.pop());
+         dataArr[4].push(result.pop());
+         dataArr[3].push(result.pop());
+         dataArr[2].push(result.pop());
+         dataArr[1].push(result.pop());
+         dataArr[0].push(result.pop());
+         if (year < end) {
+            graphData(year+1, end, dataArr).then(function(){
+                resolve(dataArr);
+            });
+         } else {
+            resolve();
+         }
+      });
+   });
+}
+
 router.post('/getplayerstats', function(req,res){
    Players.find({$and: [{player: {$in: [req.body.player, req.body.player2, req.body.player3]}},
       (req.body.week)?{week: req.body.week}:{}]},function(err,stats){
@@ -72,12 +128,6 @@ router.post('/getplayerstats', function(req,res){
 router.post('/getplayers', function(req,res){
    Players.distinct('player', {position: req.body.position}, function(err,players){
       res.json(players);
-   });
-});
-
-router.post('/getleaguehistory', function(req,res){
-   graphData(Number(req.body.start), Number(req.body.end), [[], [], [], [], [], []]).then(function (data){
-      res.json(data);
    });
 });
 
@@ -98,50 +148,6 @@ function getTotals(plr, yr){
          total += week.total;
       });
       console.log('QB='+qb+','+qb/total*100+', RB='+rb+','+rb/total*100+', WR='+wr+','+wr/total*100+', IDP='+idp+','+idp/total*100+', K='+k+','+k/total*100+', Total='+total);
-   });
-}
-
-function yearlyTotals(year) {
-   return new Promise(function (resolve, reject){
-      var totalQb = 0,
-      totalRb = 0,
-      totalWr = 0,
-      totalIdp = 0,
-      totalK = 0;
-      League.find({year: year}, function(err,data){
-         if (err)
-            reject(err);
-         else {
-            data.forEach(function(rec){
-               totalQb += rec.qb;
-               totalRb += rec.rb1 + rec.rb2;
-               totalWr += rec.wr1 + rec.wr2 + rec.wr3te;
-               totalIdp += ((year == 2011)?rec.dst:rec.idp1+rec.idp2+rec.idp3);
-               totalK += rec.k;
-            });
-            resolve([totalQb, totalRb, totalWr, totalIdp, totalK]);
-         }
-      }).sort({week:1});
-   });
-}
-
-function graphData(year, end, dataArr) {
-   return new Promise(function (resolve, reject){
-      yearlyTotals(year).then(function(result){
-         dataArr[5].push(result.pop());
-         dataArr[4].push(result.pop());
-         dataArr[3].push(result.pop());
-         dataArr[2].push(result.pop());
-         dataArr[1].push(result.pop());
-         dataArr[0].push(year);
-         if (year < end) {
-            graphData(year+1, end, dataArr).then(function(){
-                resolve(dataArr);
-            });
-         } else {
-            resolve();
-         }
-      });
    });
 }
 

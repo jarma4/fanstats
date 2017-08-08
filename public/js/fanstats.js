@@ -3,47 +3,15 @@ $('#getStats').on('click', function () {
    event.preventDefault();
    if ($('input[name="statRadio"]:checked').val() == 1) {
       if ($('input[name="managerRadio"]:checked').val() == 1) {
-         displayManager();
+         displayManagerYear();
+      } else if ($('#yearList').val() != 'All'){
+         displayLeagueYear();
       } else {
-         displayLeague();
+         displayLeagueAll();
       }
    } else {
       displayMinmax();
    }
-   //league wide stats
-   // } else {
-   //    $.ajax({
-   // 		type: 'POST',
-   // 		url: '/api/getleaguehistory',
-   //       data: {
-   //          'start': 2012,
-   //          'end': 2016,
-   //          // 'year': $('#yearList').val()
-   //       },
-   // 		success:function(retData){
-   //          var labels = {
-   //             xaxis: 'Years',
-   //             y1axis: 'Points',
-   //             y2axis: ''
-   //          },
-   //          ydata = [],
-   //          positions = ['QB', 'RB', 'WR', 'IDP', 'K'];
-   //          // populate 5 position datasets
-   //          for (var i = 0; i < 4; i++) {
-   //             ydata.push({
-   //                label: positions[i],
-   //                type: 'line',
-   //                borderColor: chartColors[i],
-   //                data: retData[i+1],  // 0 index has xaxis/years
-   //                yAxisID: 'left'
-   //             });
-   //          }
-   //          drawChart(1, retData[0], ydata, labels);
-   //       },
-   //       error: function(retData){
-   //          console.log('trouble');
-   //       }
-   //    });
 });
 
 function managerTotals(data) {
@@ -87,7 +55,7 @@ function managerTotals(data) {
    };
 }
 
-function displayManager(){
+function displayManagerYear(){
    $.ajax({
       type: 'POST',
       url: '/api/getmanagerstats',
@@ -99,12 +67,12 @@ function displayManager(){
          $('#dataHeading1').text('Manager: '+$('#managerList').val());
          $('#dataHeading2').text('Year: '+$('#yearList').val());
          // create first table with weekly totals for single manager
-         var outp = '<table class="table table-sm table-striped"><tr><th>Wk</th><th>QB</th><th>RB1</th><th>RB2</th><th>WR1</th><th>WR2</th><th>WR3TE</th><th>IDP1</th><th>IDP2</th><th>IDP3</th><th>K</th><th>Tot</th></tr>';
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>QB</th><th>RB1</th><th>RB2</th><th>WR1</th><th>WR2</th><th>WR3TE</th><th>IDP1</th><th>IDP2</th><th>IDP3</th><th>K</th><th>Total</th></tr>';
          var totals = managerTotals(retData);
          outp += totals.outp + '</table>';
          // second table with positional totals for single manager
-         outp += '<table class="table table-sm"><tr><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr>';
-         outp += '<tr><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK.toPrecision(4)+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(5)+'</td></tr>';
+         outp += '<table class="table table-sm"><tr class="small"><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr>';
+         outp += '<tr class="small"><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK.toPrecision(4)+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(5)+'</td></tr>';
          document.getElementById("resultsArea").innerHTML = outp;
          // setup chart data
          var ydata = [{
@@ -130,7 +98,7 @@ function displayManager(){
    });
 }
 
-function displayLeague(){
+function displayLeagueYear(){
    var leagueQb = 0,
    leagueRb = 0,
    leagueWr = 0,
@@ -140,7 +108,7 @@ function displayLeague(){
    $('#dataHeading1').text('League Totals');
    $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr><th>Who</th><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager
@@ -159,7 +127,7 @@ function displayLeague(){
             // get totals for manager
             var totals = managerTotals(retData);
             if (totals.totalQb) {   // make sure data exists
-               $('#leagueTable tr:last').after('<tr><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK.toPrecision(4)+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(4)+'</td></tr>');
+               $('#leagueTable tr:last').after('<tr class="small"><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK.toPrecision(4)+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(4)+'</td></tr>');
                leagueQb += totals.totalQb;
                leagueRb += totals.totalRb;
                leagueWr += totals.totalWr;
@@ -176,7 +144,7 @@ function displayLeague(){
       promises.push(deferred);
    });
    $.when.apply(undefined, promises).done(function(){
-      $('#leagueTable tr:last').after('<tr class="table-danger"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
+      $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
       var ydata = [{
          label: 'Position Totals',
          type: 'bar',
@@ -188,6 +156,54 @@ function displayLeague(){
    });
 }
 
+function displayLeagueAll (){
+   $.ajax({
+		type: 'POST',
+		url: '/api/getleaguehistory',
+      data: {
+         'start': 2012,
+         'end': 2016,
+         // 'year': $('#yearList').val()
+      },
+		success:function(retData){
+         var correctionFlag = 0;
+         var outp = '<table class="table table-sm"><tr class="small"><th>Year</th><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th></tr>';
+         retData[0].forEach(function(year, inc){
+            outp += '<tr class="small"><td>'+retData[0][inc]+'</td><td> '+Math.round(retData[1][inc])+'</td><td>'+Math.round(retData[2][inc])+'</td><td>'+Math.round(retData[3][inc])+'</td><td>'+Math.round(retData[4][inc])+'</td><td>'+Math.round(retData[5][inc])+'</td></tr>';
+            if (typeof(retData[0][inc]) == 'string') {
+               correctionFlag = 1;
+            }
+         });
+         outp += '</table>';
+         if (correctionFlag) {
+            outp += '<p class="small">* 10 managers instead of 12, numbers have been extrapolated</p>';
+         }
+         document.getElementById("resultsArea").innerHTML = outp;
+         var labels = {
+            xaxis: 'Years',
+            y1axis: 'Points',
+            y2axis: ''
+         },
+         ydata = [],
+         positions = ['QB', 'RB', 'WR', 'IDP', 'K'];
+         // populate 5 position datasets
+         for (var i = 0; i < 4; i++) {
+            ydata.push({
+               label: positions[i],
+               type: 'line',
+               borderColor: chartColors[i],
+               data: retData[i+1],  // 0 index has xaxis/years
+               yAxisID: 'left'
+            });
+         }
+         drawChart(1, retData[0], ydata, labels);
+      },
+      error: function(retData){
+         console.log('trouble');
+      }
+   });
+}
+
 function displayMinmax(){
    $.ajax({
       type: 'POST',
@@ -196,6 +212,12 @@ function displayMinmax(){
          'year': $('#yearList').val()
       },
       success:function(retData){
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>Manager</th><th>Points</th></tr>';
+         for(i=0; i<13; i++) {
+            outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.managers[i]+'</td><td>'+retData.highs[i]+'</td></tr>';
+         }
+         outp += '</table>';
+         document.getElementById("resultsArea").innerHTML = outp;
          var ydata = [{
                label: 'Weekly High',
                type: 'bar',
@@ -487,7 +509,7 @@ $(document).ready(function() {
    Chart.defaults.global.elements.line.borderWidth = 2;
    Chart.defaults.global.elements.line.fill = false;
    Chart.defaults.global.responsive = true;
-   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'bar');
+   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'line');
    // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');
    // $('#chartArea').hide();
    // $('#chartArea2').hide();

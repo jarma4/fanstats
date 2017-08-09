@@ -29,9 +29,13 @@ html
 					span#graphHeading
 					canvas#chartArea(width='300', height='320')
 					block col1
-				.col-sm-5
-					span#dataHeading1
-					span#dataHeading2.pull-right
+				.col-sm-5.dataarea
+					.container-fluid
+						.row.justify-content-center
+							.col-sm-4.text-right
+								span#dataHeading1
+							.col-sm-4
+								span#dataHeading2
 					#resultsArea
 					block col2
 

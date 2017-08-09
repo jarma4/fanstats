@@ -7,20 +7,6 @@ var managerSchema = new mongoose.Schema({
    end: Number
 });
 
-var playerSchema = new mongoose.Schema({
-   player : String,
-   position : String,
-   year: Number,
-   week : Number,
-   points: Number,
-	rushing_yards: Number,
-   rushing_tds: Number,
-	receive_yards: Number,
-   receive_tds: Number,
-   passing_yards: Number,
-   passing_tds: Number
-});
-
 var leagueSchema = new mongoose.Schema({
    year : Number,
    week : Number,
@@ -38,6 +24,20 @@ var leagueSchema = new mongoose.Schema({
    k: Number,
    total: Number
 }, {collection: 'league'});   // colleciton object needed when collection name not plural
+
+var playerSchema = new mongoose.Schema({
+   player : String,
+   position : String,
+   year: Number,
+   week : Number,
+   points: Number,
+	rushing_yards: Number,
+   rushing_tds: Number,
+	receive_yards: Number,
+   receive_tds: Number,
+   passing_yards: Number,
+   passing_tds: Number
+});
 
 var League = mongoose.model('League', leagueSchema);
 var Managers = mongoose.model('Managers', managerSchema);

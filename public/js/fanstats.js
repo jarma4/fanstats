@@ -39,7 +39,7 @@ function managerTotals(data) {
       // starting week 3, create running 3 week average
       chartAverage.push((i > 1)?(chartTotals[i]+chartTotals[i-1]+chartTotals[i-2])/3:null);
       // go ahead and store table rows for each week although not used when showing league
-      outp += '<tr><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+rec.wr3te+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+rec.k+'</td><td>'+rec.total+'</td></tr>';
+      outp += '<tr class="small"><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+rec.wr3te+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+rec.k+'</td><td>'+rec.total+'</td></tr>';
    });
    return {
       totalQb: totalQb,
@@ -161,6 +161,7 @@ function displayLeagueAll (){
 		type: 'POST',
 		url: '/api/getleaguehistory',
       data: {
+         'manager': 'all',
          'start': 2012,
          'end': 2016,
          // 'year': $('#yearList').val()
@@ -196,7 +197,7 @@ function displayLeagueAll (){
                yAxisID: 'left'
             });
          }
-         drawChart(1, retData[0], ydata, labels);
+         drawChart(1, retData[0], ydata);
       },
       error: function(retData){
          console.log('trouble');
@@ -212,20 +213,30 @@ function displayMinmax(){
          'year': $('#yearList').val()
       },
       success:function(retData){
-         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>Manager</th><th>Points</th></tr>';
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>High</th><th>Manager</th><th>Low</th><th>Manager</th></tr>';
          for(i=0; i<13; i++) {
-            outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.managers[i]+'</td><td>'+retData.highs[i]+'</td></tr>';
+            outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.highs[i]+'</td><td>'+retData.mgr1[i]+'</td><td>'+retData.lows[i]+'</td><td>'+retData.mgr2[i]+'</td></tr>';
          }
          outp += '</table>';
+         // setup for stacked bar chart
+         chart1.options.scales.xAxes[0].stacked = true;
+         chart1.options.scales.yAxes[0].stacked = true;
          document.getElementById("resultsArea").innerHTML = outp;
          var ydata = [{
-               label: 'Weekly High',
-               type: 'bar',
-               backgroundColor: '#244363',
-               data: retData.highs,
-               yAxisID: 'left'
+            label: 'Weekly Low',
+            type: 'bar',
+            backgroundColor: '#eee',
+            data: retData.lows
+         }, {
+            label: 'Weekly High',
+            type: 'bar',
+            backgroundColor: '#244363',
+            data: retData.highs.map((high, index) =>{return high - retData.lows[index]}),
             }];
          drawChart(1, retData.weeks, ydata, null, true);
+         // reset for no stacked bar chart
+         chart1.options.scales.xAxes[0].stacked = false;
+         chart1.options.scales.yAxes[0].stacked = false;
       },
       error: function(retData){
          console.log('Error getting player stats');
@@ -443,11 +454,9 @@ var chart1, chart2,
    chartColors = ['orange', 'white', 'cyan', 'green', 'gold'];
 
 function drawChart(num, xaxis, yaxis, axisLabels, zeroAxis, displayY2) {
-   // chart1.type = 'bar';
    var tempChart = [chart1, chart2];
    tempChart[num-1].data.labels = xaxis;
    tempChart[num-1].data.datasets = yaxis;
-   // tempChart[num-1].options.scales.gridLines.color = 'white';
    if (axisLabels) {
       tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
       tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
@@ -509,7 +518,7 @@ $(document).ready(function() {
    Chart.defaults.global.elements.line.borderWidth = 2;
    Chart.defaults.global.elements.line.fill = false;
    Chart.defaults.global.responsive = true;
-   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'line');
+   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'bar');
    // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');
    // $('#chartArea').hide();
    // $('#chartArea2').hide();

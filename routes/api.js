@@ -31,20 +31,24 @@ router.post('/getmanagers', function(req,res){
 function weeklyHigh (yr, wk){
    return new Promise(function(resolve, reject) {
       League.find({week: wk, year: yr}, function(err, data){
-         var mgr, high = 0;
+         var mgr1, high = 0, mgr2, low = 200;
          data.forEach(function(manager) {
-            if (manager.total >high) {
+            if (manager.total > high) {
                high = manager.total;
-               mgr = manager.manager;
+               mgr1 = manager.manager;
+            }
+            if (manager.total < low) {
+               low = manager.total;
+               mgr2 = manager.manager;
             }
          });
-         resolve ({high, mgr});
+         resolve ({high, mgr1, low, mgr2});
       });
    });
 }
 
 router.post('/getminmaxstats', function(req,res){
-   var promises = [], highs = [], names = [], weeks = [];
+   var promises = [], highs = [], mgr1 = [], lows = [], mgr2 = [], weeks = [];
    for (i=0; i<13; i++) {
       promises.push(weeklyHigh(req.body.year, i+1));
       weeks.push(i+1);
@@ -52,9 +56,11 @@ router.post('/getminmaxstats', function(req,res){
    Promise.all(promises).then(function(result){
       result.forEach(function(item){
          highs.push(item.high);
-         names.push(item.mgr);
+         mgr1.push(item.mgr1);
+         lows.push(item.low);
+         mgr2.push(item.mgr2);
       });
-      res.send({highs: highs, managers: names, weeks: weeks});
+      res.send({highs: highs, mgr1: mgr1, lows: lows, mgr2: mgr2, weeks: weeks});
    });
 });
 

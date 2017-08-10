@@ -2,12 +2,14 @@
 $('#getStats').on('click', function () {
    event.preventDefault();
    if ($('input[name="statRadio"]:checked').val() == 1) {
-      if ($('input[name="managerRadio"]:checked').val() == 1) {
-         displayManagerYear();
-      } else if ($('#yearList').val() != 'All'){
-         displayLeagueYear();
+      if ($('#yearList').val() != 'All'){
+         if ($('input[name="managerRadio"]:checked').val() == 1) {
+            displayManagerYear();
+         } else {
+            displayLeagueYear();
+         }
       } else {
-         displayLeagueAll();
+         displayAll();
       }
    } else {
       displayMinmax();
@@ -90,7 +92,8 @@ function displayManagerYear(){
                data: totals.chartAverage,
                yAxisID: 'left'
          }];
-         drawChart(1, totals.chartWeeks, ydata, null, true);
+         // drawChart(1, totals.chartWeeks, ydata, null, true);
+         drawChart('line-zero', totals.chartWeeks, ydata);
       },
       error: function(retData){
          console.log('Error getting stats');
@@ -152,16 +155,16 @@ function displayLeagueYear(){
          data: [leagueQb, leagueRb, leagueWr, leagueIdp, leagueK],
          yAxisID: 'left'
       }];
-      drawChart(1, ['QB', 'RB', 'WR', 'IDP', 'K'], ydata, null, true);
+      drawChart('bar', ['QB', 'RB', 'WR', 'IDP', 'K'], ydata);
    });
 }
 
-function displayLeagueAll (){
+function displayAll (){
    $.ajax({
 		type: 'POST',
 		url: '/api/getleaguehistory',
       data: {
-         'manager': 'all',
+         'manager': ($('input[name="managerRadio"]:checked').val() == 1)?$('#managerList').val():'all',
          'start': 2012,
          'end': 2016,
          // 'year': $('#yearList').val()
@@ -197,7 +200,7 @@ function displayLeagueAll (){
                yAxisID: 'left'
             });
          }
-         drawChart(1, retData[0], ydata);
+         drawChart('line', retData[0], ydata);
       },
       error: function(retData){
          console.log('trouble');
@@ -218,9 +221,6 @@ function displayMinmax(){
             outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.highs[i]+'</td><td>'+retData.mgr1[i]+'</td><td>'+retData.lows[i]+'</td><td>'+retData.mgr2[i]+'</td></tr>';
          }
          outp += '</table>';
-         // setup for stacked bar chart
-         chart1.options.scales.xAxes[0].stacked = true;
-         chart1.options.scales.yAxes[0].stacked = true;
          document.getElementById("resultsArea").innerHTML = outp;
          var ydata = [{
             label: 'Weekly Low',
@@ -233,10 +233,10 @@ function displayMinmax(){
             backgroundColor: '#244363',
             data: retData.highs.map((high, index) =>{return high - retData.lows[index]}),
             }];
-         drawChart(1, retData.weeks, ydata, null, true);
+         drawChart('bar-stacked', retData.weeks, ydata);
          // reset for no stacked bar chart
-         chart1.options.scales.xAxes[0].stacked = false;
-         chart1.options.scales.yAxes[0].stacked = false;
+         // chart1.options.scales.xAxes[0].stacked = false;
+         // chart1.options.scales.yAxes[0].stacked = false;
       },
       error: function(retData){
          console.log('Error getting player stats');
@@ -264,6 +264,253 @@ $('input[name="statRadio"]').change(function() {
    $("input[name=managerRadio][value=0]").prop("checked",true);
    toggleManager($(this).val());
 });
+//       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
+
+function drawChart(type, xaxis, yaxis) {
+   if (chart1)
+      chart1.destroy();
+   chart1 =  new Chart(document.getElementById("chartArea").getContext("2d"), {
+      type: (type.slice(0,3) == 'bar')?'bar':'line',
+      data: {
+         labels: xaxis,
+         datasets: yaxis
+      },
+      options: {
+         scales: {
+            yAxes: [{
+               position: 'left',
+               id: 'left',
+               gridLines: {
+                  color: 'white'
+               },
+               scaleLabel: {
+                  display: true,
+                  color: 'white'
+               },
+               ticks: {
+                  beginAtZero: (type.search('zero') > 0)?true:false
+               },
+               stacked: (type.search('stacked') > 0)?true:false
+            // }, {
+            //    position: 'right',
+            //    id: 'right',
+            //    scaleLabel: {
+            //       display: true,
+            //    }
+            }],
+            xAxes: [{
+               scaleLabel: {
+                  display: true,
+               },
+               stacked: (type.search('stacked') > 0)?true:false
+            }]
+         }
+      }
+   });
+}
+// multi use alert modal
+function alert(type, message){
+   $('#alertBody').removeClass();
+   $('#alertBody').addClass('modal-content').addClass('modal-'+type);
+   $('#alertText').text(message);
+   $('#alertModal').modal();
+   setTimeout(function(){
+      $('#alertModal').modal('hide');
+   }, 2000);
+}
+
+function getWeek(date){
+   var wk, dst=0;
+   var seasonStart = new Date(2016,8,8);
+   var nflWeeks = [];
+   for (var i=0;i<18;i++){
+      if (i > 7)
+         dst = 3600000;
+      nflWeeks.push(new Date(seasonStart.valueOf()+i*7*86400000+dst));
+   }
+   for (i=0;i<17;i++){
+      if (date > nflWeeks[i] && date < nflWeeks[i+1]) {
+         wk = i+1;
+         break;
+      }
+   }
+   return wk;
+}
+
+// for Managers page
+function getManagers (){
+   $('#managerList').empty();
+   $.ajax({
+		type: 'POST',
+		url: '/api/getmanagers',
+      data: {
+         'year': $('#yearList').val()
+      },
+		success:function(retData){
+         $.each(retData, function(i, manager){
+            $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
+         });
+      },
+      error: function(retData){
+         console.log('Error getting managers');
+      }
+   });
+}
+
+// function drawChart(num, xaxis, yaxis, axisLabels, zeroAxis, displayY2) {
+//    var tempChart = [chart1, chart2];
+//    tempChart[num-1].data.labels = xaxis;
+//    tempChart[num-1].data.datasets = yaxis;
+//    if (axisLabels) {
+//       tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
+//       tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
+//       tempChart[num-1].options.scales.xAxes[0].scaleLabel.labelString = axisLabels.xaxis;
+//    }
+//    if (displayY2) {
+//       tempChart[num-1].options.scales.yAxes[1].display = true;
+//    } else {
+//       tempChart[num-1].options.scales.yAxes[1].display = false;
+//    }
+//    if (zeroAxis) {
+//       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
+//    } else {
+//       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = false;
+//    }
+//    tempChart[num-1].update();
+//    $((num == 1)?'#chartArea':'#chartArea2').show();  // display just in case turned off
+// }
+   // var tempChart = [chart1, chart2];
+   // tempChart[num-1].data.labels = xaxis;
+   // tempChart[num-1].data.datasets = yaxis;
+   // if (axisLabels) {
+   //    tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
+   //    tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
+   //    tempChart[num-1].options.scales.xAxes[0].scaleLabel.labelString = axisLabels.xaxis;
+   // }
+   // if (displayY2) {
+   //    tempChart[num-1].options.scales.yAxes[1].display = true;
+   // } else {
+   //    tempChart[num-1].options.scales.yAxes[1].display = false;
+   // }
+   // if (zeroAxis) {
+   //    tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
+   // } else {
+   //    tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = false;
+   // }
+   // tempChart[num-1].update();
+   // $((num == 1)?'#chartArea':'#chartArea2').show();  // display just in case turned off
+
+// function initChart (ctx, type) {
+//    return new Chart(ctx, {
+//       type: type,
+//       data: {
+//          labels: [],
+//          datasets: []
+//       },
+//       options: {
+//          scales: {
+//             yAxes: [{
+//                position: 'left',
+//                id: 'left',
+//                gridLines: {
+//                   color: 'white'
+//                },
+//                scaleLabel: {
+//                   display: true,
+//                   color: 'white'
+//                }
+//             }, {
+//                position: 'right',
+//                id: 'right',
+//                scaleLabel: {
+//                   display: true,
+//                }
+//             }],
+//             xAxes: [{
+//                scaleLabel: {
+//                   display: true,
+//                }
+//             }]
+//          }
+//       }
+//    });
+// }
+var chart1, chart2,
+   nfc = ['ATL', 'ARZ', 'CAR', 'CHI', 'DAL', 'DET', 'GB', 'MIN', 'NO', 'NYG', 'PHI', 'SEA', 'SF', 'STL', 'TB', 'WAS' ],
+   afc = ['BAL', 'BUF', 'CIN', 'CLE', 'DEN', 'HOU', 'KC', 'JAC', 'IND', 'MIA', 'NE', 'NYJ', 'OAK', 'PIT', 'SD', 'TEN'],
+   nflTeams = ['Atlanta', 'Arizona', 'Carolina', 'Chicago', 'Dallas', 'Detroit', 'Green Bay', 'Minnesota', 'New Orleans', 'N.Y. Giants', 'Philadelphia', 'Seattle', 'San Francisco', 'L.A. Rams', 'Tampa Bay', 'Washington', 'Baltimore', 'Buffalo', 'Cincinatti', 'Cleveland', 'Denver', 'Houston', 'Kansas City', 'Jacksonville', 'Indianapolis', 'Miami', 'New England', 'N.Y. Jets', 'Oakland', 'Pittsburgh', 'San Diego', 'Tennessee'],
+   nflColors = {
+      Atlanta: '#A71930', ARZ: '#97233F', CAR: '#0085CA', CHI: '#0B162A', DAL: '#002244', DET: '#005A8B', GB: '#203731', MIN: '#4F2683', 'New Orleans': '#9F8958', NYG: '#0B2265', PHI: '#004953', SEA: '#69BE28', 'San Francisco': '#AA0000', STL: '#B3995D', TB: '#D50A0A', WAS: '#773141', Baltimore: '#241773', BUF: '#00338D', CIN: '#FB4F14', CLE: '#FB4F14', DEN: '#FB4F14', HOU: '#03202F', KC: '#E31837', JAC: '#006778', IND: '#002C5F', MIA: '#008E97', NE: '#002244', NYJ: '#203731', OAK: '#A5ACAF', PIT: '#FFB612', SD: '#0073CF', TEN: '#4B92DB'
+   },
+   chartColors = ['orange', 'white', 'cyan', 'green', 'gold'];
+
+$(document).ready(function() {
+   // Chart.defaults.global.defaultFontColor = '#fff';
+   Chart.defaults.global.elements.line.tension = 0;
+   Chart.defaults.global.elements.line.borderWidth = 2;
+   Chart.defaults.global.elements.line.fill = false;
+   Chart.defaults.global.responsive = true;
+   // chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'line');
+   // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');
+   // $('#chartArea').hide();
+   // $('#chartArea2').hide();
+
+   // initialize per page
+   switch (window.location.pathname) {
+      case '/':
+         setPage(1);
+         for (var i=2009; i<2017; i++)
+            $('#yearList').append('<option value="'+i+'">'+i+'</option>');
+         $('#yearList').append('<option value="All">All</option>');
+         $('#yearList option[value="2016"]').attr("selected", "selected");
+         getManagers();
+         $('#dataHeading').text('Data');
+         break;
+      case '/players':
+         setPage(2);
+         getPlayers();
+         break;
+      case '/defenses':
+         setPage(3);
+         $.each(nflTeams.sort(), function(i,rec) {
+            $('#team1List').append('<option value="'+rec+'">'+rec+'</option>');
+            $('#team2List').append('<option value="'+rec+'">'+rec+'</option>');
+         });
+         $('#team1List option[value="Baltimore"]').attr("selected", "selected");
+         $('#team2List option[value="San Francisco"]').attr("selected", "selected");
+         for (i=1; i<18; i++)
+            $('#weekList').append('<option value="'+i+'">'+i+'</option>');
+         $('#weekList option[value="1"]').attr("selected", "selected");
+         break;
+      }
+});
+
+// change navbar
+function setPage(num) {
+   $('#navbar li:nth-child('+(num+1)%3+')').removeClass('active');
+   $('#navbar li:nth-child('+(num+2)%3+')').removeClass('active');
+   $('#navbar li:nth-child('+num+')').addClass('active');
+}
+
+// for Players page
+function getPlayers (){
+   $('#playerList').empty().append('empty');
+	$.ajax({
+		type: 'POST',
+		url: '/api/getplayers',
+      data: {
+         'position': $('#positionList').val(),
+      },
+      success:function(retData){
+			$.each(retData, function(i,player){
+				$('#playerList').append('<option value="'+player+'">'+player+'</option>');
+			});
+		},
+		error: function(retData){
+			alert(retData.type,retData.message);
+		}
+	});
+}
 
 $('#playerStats').on('click', function () {
    event.preventDefault();
@@ -319,7 +566,7 @@ $('#playerStats').on('click', function () {
             y1axis: 'Yards',
             y2axis: 'TDs'
          };
-         drawChart(1, weeks, ydata, labels, true, true);
+         drawChart('line', weeks, ydata);
       },
       error: function(retData){
          console.log('Error getting player stats');
@@ -368,187 +615,4 @@ $('#defenseStats').on('click', function(){
 
 $('#positionList').change(function() {
    getPlayers();
-});
-
-// multi use alert modal
-function alert(type, message){
-   $('#alertBody').removeClass();
-   $('#alertBody').addClass('modal-content').addClass('modal-'+type);
-   $('#alertText').text(message);
-   $('#alertModal').modal();
-   setTimeout(function(){
-      $('#alertModal').modal('hide');
-   }, 2000);
-}
-
-function getWeek(date){
-   var wk, dst=0;
-   var seasonStart = new Date(2016,8,8);
-   var nflWeeks = [];
-   for (var i=0;i<18;i++){
-      if (i > 7)
-         dst = 3600000;
-      nflWeeks.push(new Date(seasonStart.valueOf()+i*7*86400000+dst));
-   }
-   for (i=0;i<17;i++){
-      if (date > nflWeeks[i] && date < nflWeeks[i+1]) {
-         wk = i+1;
-         break;
-      }
-   }
-   return wk;
-}
-
-// for Managers page
-function getManagers (){
-   $('#managerList').empty();
-   $.ajax({
-		type: 'POST',
-		url: '/api/getmanagers',
-      data: {
-         'year': $('#yearList').val()
-      },
-		success:function(retData){
-         $.each(retData, function(i, manager){
-            $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
-         });
-      },
-      error: function(retData){
-         console.log('Error getting managers');
-      }
-   });
-}
-// for Players page
-function getPlayers (){
-   $('#playerList').empty().append('empty');
-	$.ajax({
-		type: 'POST',
-		url: '/api/getplayers',
-      data: {
-         'position': $('#positionList').val(),
-      },
-      success:function(retData){
-			$.each(retData, function(i,player){
-				$('#playerList').append('<option value="'+player+'">'+player+'</option>');
-			});
-		},
-		error: function(retData){
-			alert(retData.type,retData.message);
-		}
-	});
-}
-// change navbar
-function setPage(num) {
-   $('#navbar li:nth-child('+(num+1)%3+')').removeClass('active');
-   $('#navbar li:nth-child('+(num+2)%3+')').removeClass('active');
-   $('#navbar li:nth-child('+num+')').addClass('active');
-}
-
-var chart1, chart2,
-   nfc = ['ATL', 'ARZ', 'CAR', 'CHI', 'DAL', 'DET', 'GB', 'MIN', 'NO', 'NYG', 'PHI', 'SEA', 'SF', 'STL', 'TB', 'WAS' ],
-   afc = ['BAL', 'BUF', 'CIN', 'CLE', 'DEN', 'HOU', 'KC', 'JAC', 'IND', 'MIA', 'NE', 'NYJ', 'OAK', 'PIT', 'SD', 'TEN'],
-   nflTeams = ['Atlanta', 'Arizona', 'Carolina', 'Chicago', 'Dallas', 'Detroit', 'Green Bay', 'Minnesota', 'New Orleans', 'N.Y. Giants', 'Philadelphia', 'Seattle', 'San Francisco', 'L.A. Rams', 'Tampa Bay', 'Washington', 'Baltimore', 'Buffalo', 'Cincinatti', 'Cleveland', 'Denver', 'Houston', 'Kansas City', 'Jacksonville', 'Indianapolis', 'Miami', 'New England', 'N.Y. Jets', 'Oakland', 'Pittsburgh', 'San Diego', 'Tennessee'],
-   nflColors = {
-      Atlanta: '#A71930', ARZ: '#97233F', CAR: '#0085CA', CHI: '#0B162A', DAL: '#002244', DET: '#005A8B', GB: '#203731', MIN: '#4F2683', 'New Orleans': '#9F8958', NYG: '#0B2265', PHI: '#004953', SEA: '#69BE28', 'San Francisco': '#AA0000', STL: '#B3995D', TB: '#D50A0A', WAS: '#773141', Baltimore: '#241773', BUF: '#00338D', CIN: '#FB4F14', CLE: '#FB4F14', DEN: '#FB4F14', HOU: '#03202F', KC: '#E31837', JAC: '#006778', IND: '#002C5F', MIA: '#008E97', NE: '#002244', NYJ: '#203731', OAK: '#A5ACAF', PIT: '#FFB612', SD: '#0073CF', TEN: '#4B92DB'
-   },
-   chartColors = ['orange', 'white', 'cyan', 'green', 'gold'];
-
-function drawChart(num, xaxis, yaxis, axisLabels, zeroAxis, displayY2) {
-   var tempChart = [chart1, chart2];
-   tempChart[num-1].data.labels = xaxis;
-   tempChart[num-1].data.datasets = yaxis;
-   if (axisLabels) {
-      tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
-      tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
-      tempChart[num-1].options.scales.xAxes[0].scaleLabel.labelString = axisLabels.xaxis;
-   }
-   if (displayY2) {
-      tempChart[num-1].options.scales.yAxes[1].display = true;
-   } else {
-      tempChart[num-1].options.scales.yAxes[1].display = false;
-   }
-   if (zeroAxis) {
-      tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
-   } else {
-      tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = false;
-   }
-   tempChart[num-1].update();
-   $((num == 1)?'#chartArea':'#chartArea2').show();  // display just in case turned off
-}
-
-function initChart (ctx, type) {
-   return new Chart(ctx, {
-      type: type,
-      data: {
-         labels: [],
-         datasets: []
-      },
-      options: {
-         scales: {
-            yAxes: [{
-               position: 'left',
-               id: 'left',
-               gridLines: {
-                  color: 'white'
-               },
-               scaleLabel: {
-                  display: true,
-                  color: 'white'
-               }
-            }, {
-               position: 'right',
-               id: 'right',
-               scaleLabel: {
-                  display: true,
-               }
-            }],
-            xAxes: [{
-               scaleLabel: {
-                  display: true,
-               }
-            }]
-         }
-      }
-   });
-}
-
-$(document).ready(function() {
-   // Chart.defaults.global.defaultFontColor = '#fff';
-   Chart.defaults.global.elements.line.tension = 0;
-   Chart.defaults.global.elements.line.borderWidth = 2;
-   Chart.defaults.global.elements.line.fill = false;
-   Chart.defaults.global.responsive = true;
-   chart1 = initChart(document.getElementById("chartArea").getContext("2d"), 'bar');
-   // chart2 = initChart(document.getElementById("chartArea2").getContext("2d"), 'line');
-   // $('#chartArea').hide();
-   // $('#chartArea2').hide();
-
-   // initialize per page
-   switch (window.location.pathname) {
-      case '/':
-         setPage(1);
-         for (var i=2009; i<2017; i++)
-            $('#yearList').append('<option value="'+i+'">'+i+'</option>');
-         $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2016"]').attr("selected", "selected");
-         getManagers();
-         $('#dataHeading').text('Data');
-         break;
-      case '/players':
-         setPage(2);
-         getPlayers();
-         break;
-      case '/defenses':
-         setPage(3);
-         $.each(nflTeams.sort(), function(i,rec) {
-            $('#team1List').append('<option value="'+rec+'">'+rec+'</option>');
-            $('#team2List').append('<option value="'+rec+'">'+rec+'</option>');
-         });
-         $('#team1List option[value="Baltimore"]').attr("selected", "selected");
-         $('#team2List option[value="San Francisco"]').attr("selected", "selected");
-         for (i=1; i<18; i++)
-            $('#weekList').append('<option value="'+i+'">'+i+'</option>');
-         $('#weekList option[value="1"]').attr("selected", "selected");
-         break;
-      }
 });

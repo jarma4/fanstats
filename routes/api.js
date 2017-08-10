@@ -23,7 +23,8 @@ router.post('/getmanagerstats', function(req,res){
 });
 
 router.post('/getmanagers', function(req,res){
-   Managers.find({start:{$lte: req.body.year}, end:{$gte: req.body.year}}, {name: 1},  function(err, managers){
+   var tmp = (req.body.year != 'All')?req.body.year:2016;
+   Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
       res.json(managers);
    }).sort({name:1});
 });
@@ -65,20 +66,24 @@ router.post('/getminmaxstats', function(req,res){
 });
 
 router.post('/getleaguehistory', function(req,res){
-   graphData(Number(req.body.start), Number(req.body.end), [[], [], [], [], [], []]).then(function (data){
+   graphData(req.body.manager, Number(req.body.start), Number(req.body.end), [[], [], [], [], [], []]).then(function (data){
       res.json(data);
    });
 });
 
-function yearlyTotals(year) {
+function yearlyTotals(mgr, year) {
    return new Promise(function (resolve, reject){
       var totalQb = 0,
       totalRb = 0,
       totalWr = 0,
       totalIdp = 0,
       totalK = 0,
-      correction = 1;
-      League.find({year: year}, function(err,data){
+      correction = 1,
+      query = {year: year};
+      if (mgr != 'all') {
+         query.manager = mgr;
+      }
+      League.find(query, function(err,data){
          if (err)
             reject(err);
          else {
@@ -100,9 +105,9 @@ function yearlyTotals(year) {
    });
 }
 
-function graphData(year, end, dataArr) {
+function graphData(manager, year, end, dataArr) {
    return new Promise(function (resolve, reject){
-      yearlyTotals(year).then(function(result){
+      yearlyTotals(manager, year).then(function(result){
          dataArr[5].push(result.pop());
          dataArr[4].push(result.pop());
          dataArr[3].push(result.pop());
@@ -110,7 +115,7 @@ function graphData(year, end, dataArr) {
          dataArr[1].push(result.pop());
          dataArr[0].push(result.pop());
          if (year < end) {
-            graphData(year+1, end, dataArr).then(function(){
+            graphData(manager, year+1, end, dataArr).then(function(){
                 resolve(dataArr);
             });
          } else {

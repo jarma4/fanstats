@@ -29,10 +29,10 @@ router.post('/getmanagers', function(req,res){
    }).sort({name:1});
 });
 
-function weeklyHigh (yr, wk){
+function weeklyMinMax (yr, wk){
    return new Promise(function(resolve, reject) {
       League.find({week: wk, year: yr}, function(err, data){
-         var mgr1, high = 0, mgr2, low = 200;
+         var mgr1, high = 0, mgr2, low = 200, avg = 0;
          data.forEach(function(manager) {
             if (manager.total > high) {
                high = manager.total;
@@ -42,16 +42,18 @@ function weeklyHigh (yr, wk){
                low = manager.total;
                mgr2 = manager.manager;
             }
+            avg += manager.total;
          });
-         resolve ({high, mgr1, low, mgr2});
+         avg = avg / data.length;
+         resolve ({high, mgr1, low, mgr2, avg});
       });
    });
 }
 
 router.post('/getminmaxstats', function(req,res){
-   var promises = [], highs = [], mgr1 = [], lows = [], mgr2 = [], weeks = [];
+   var promises = [], highs = [], mgr1 = [], lows = [], mgr2 = [], avgs = [], weeks = [];
    for (i=0; i<13; i++) {
-      promises.push(weeklyHigh(req.body.year, i+1));
+      promises.push(weeklyMinMax(req.body.year, i+1));
       weeks.push(i+1);
    }
    Promise.all(promises).then(function(result){
@@ -60,8 +62,9 @@ router.post('/getminmaxstats', function(req,res){
          mgr1.push(item.mgr1);
          lows.push(item.low);
          mgr2.push(item.mgr2);
+         avgs.push(item.avg);
       });
-      res.send({highs: highs, mgr1: mgr1, lows: lows, mgr2: mgr2, weeks: weeks});
+      res.send({highs: highs, mgr1: mgr1, lows: lows, mgr2: mgr2, avgs: avgs, weeks: weeks});
    });
 });
 

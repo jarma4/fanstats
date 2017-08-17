@@ -111,51 +111,54 @@ function displayLeagueYear(){
    $('#dataHeading1').text('League Totals');
    $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total K</th><th onclick="sortTable(leagueTable, 6)">Total</th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager
    $.each ($('#managerList option'), function(managernum){
       var manager = $(this).val();
-      var deferred = new $.Deferred();
-      $.ajax({
-         type: 'POST',
-         url: '/api/getmanagerstats',
-         asynchronous: false,
-         data: {
-            'manager': manager,
-            'year': $('#yearList').val()
-         },
-         success:function(retData){
-            // get totals for manager
-            var totals = managerTotals(retData);
-            if (totals.totalQb) {   // make sure data exists
-               $('#leagueTable tr:last').after('<tr class="small"><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK.toPrecision(4)+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(4)+'</td></tr>');
-               leagueQb += totals.totalQb;
-               leagueRb += totals.totalRb;
-               leagueWr += totals.totalWr;
-               leagueIdp += totals.totalIdp;
-               leagueK += totals.totalK;
-               leagueTotal += totals.totalTotal;
+      var tmp = new Promise(function(resolve, reject){
+         $.ajax({
+            type: 'POST',
+            url: '/api/getmanagerstats',
+            asynchronous: false,
+            data: {
+               'manager': manager,
+               'year': $('#yearList').val()
+            },
+            success:function(retData){
+               // get totals for manager
+               var totals = managerTotals(retData);
+               if (totals.totalQb) {   // make sure data exists
+                  $('#leagueTable tr:last').after('<tr class="small"><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+'</td><td>'+totals.totalRb.toPrecision(4)+'</td><td>'+totals.totalWr.toPrecision(4)+'</td><td>'+totals.totalIdp.toPrecision(4)+'</td><td>'+totals.totalK.toPrecision(4)+'</td><td>'+totals.totalTotal.toPrecision(4)+'</td></tr>');
+                  leagueQb += totals.totalQb;
+                  leagueRb += totals.totalRb;
+                  leagueWr += totals.totalWr;
+                  leagueIdp += totals.totalIdp;
+                  leagueK += totals.totalK;
+                  leagueTotal += totals.totalTotal;
+               }
+               resolve();
+            },
+            error: function(retData){
+               console.log('trouble');
+               reject();
             }
-            deferred.resolve();
-         },
-         error: function(retData){
-            console.log('trouble');
-         }
+         });
       });
-      promises.push(deferred);
+      promises.push(tmp);
    });
    $.when.apply(undefined, promises).done(function(){
+      sortTable(leagueTable, 4);
       $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td></tr>');
       var ydata = [{
          label: 'Position Totals',
-         type: 'bar',
-         backgroundColor: '#244363',
+         type: 'pie',
+         backgroundColor: chartColors,
          data: [leagueQb, leagueRb, leagueWr, leagueIdp, leagueK],
          yAxisID: 'left'
       }];
-      drawChart('bar', ['QB', 'RB', 'WR', 'IDP', 'K'], ydata);
+      drawChart('pie', ['QB', 'RB', 'WR', 'IDP', 'K'], ydata);
    });
 }
 
@@ -216,24 +219,32 @@ function displayMinmax(){
          'year': $('#yearList').val()
       },
       success:function(retData){
-         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>High</th><th>Manager</th><th>Low</th><th>Manager</th></tr>';
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th onclick="sortTable(resultsArea, 1)">High</th><th>Manager</th><th onclick="sortTable(resultsArea, 3)">Low</th><th>Manager</th></tr>';
          for(i=0; i<13; i++) {
             outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.highs[i]+'</td><td>'+retData.mgr1[i]+'</td><td>'+retData.lows[i]+'</td><td>'+retData.mgr2[i]+'</td></tr>';
          }
          outp += '</table>';
          document.getElementById("resultsArea").innerHTML = outp;
          var ydata = [{
-            label: 'Weekly Low',
-            type: 'bar',
-            backgroundColor: '#eee',
-            data: retData.lows
-         }, {
             label: 'Weekly High',
-            type: 'bar',
-            backgroundColor: '#244363',
-            data: retData.highs.map((high, index) =>{return high - retData.lows[index]}),
-            }];
-         drawChart('bar-stacked', retData.weeks, ydata);
+            type: 'line',
+            borderColor: 'orange',
+            // backgroundColor: '#244363',
+            data: retData.highs,
+         }, {
+            label: 'Weekly Avg',
+            type: 'line',
+            borderColor: '#eee',
+            // backgroundColor: '#eee',
+            data: retData.avgs
+         }, {
+            label: 'Weekly Low',
+            type: 'line',
+            borderColor: '#244363',
+            // backgroundColor: '#eee',
+            data: retData.lows
+         }];
+         drawChart('line-zero', retData.weeks, ydata);
          // reset for no stacked bar chart
          // chart1.options.scales.xAxes[0].stacked = false;
          // chart1.options.scales.yAxes[0].stacked = false;
@@ -247,6 +258,30 @@ function displayMinmax(){
 $('#yearList').change(function() {
    getManagers();
 });
+
+function sortTable(target, col) {
+  var table, rows, switching, i, x, y, shouldSwitch;
+  // table = document.getElementById(target);
+  switching = true;
+  while (switching) {
+    switching = false;
+    rows = target.getElementsByTagName("TR");
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      x = rows[i].getElementsByTagName("TD")[col];
+      y = rows[i + 1].getElementsByTagName("TD")[col];
+      if (Number(x.innerHTML) < Number(y.innerHTML)) {
+        shouldSwitch= true;
+        break;
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+    }
+  }
+}
 
 function toggleManager(status){
    if (status == 1) {
@@ -270,7 +305,7 @@ function drawChart(type, xaxis, yaxis) {
    if (chart1)
       chart1.destroy();
    chart1 =  new Chart(document.getElementById("chartArea").getContext("2d"), {
-      type: (type.slice(0,3) == 'bar')?'bar':'line',
+      type: (type == 'pie')?'pie':(type.slice(0,3) == 'bar')?'bar':'line',
       data: {
          labels: xaxis,
          datasets: yaxis
@@ -442,7 +477,7 @@ var chart1, chart2,
    nflColors = {
       Atlanta: '#A71930', ARZ: '#97233F', CAR: '#0085CA', CHI: '#0B162A', DAL: '#002244', DET: '#005A8B', GB: '#203731', MIN: '#4F2683', 'New Orleans': '#9F8958', NYG: '#0B2265', PHI: '#004953', SEA: '#69BE28', 'San Francisco': '#AA0000', STL: '#B3995D', TB: '#D50A0A', WAS: '#773141', Baltimore: '#241773', BUF: '#00338D', CIN: '#FB4F14', CLE: '#FB4F14', DEN: '#FB4F14', HOU: '#03202F', KC: '#E31837', JAC: '#006778', IND: '#002C5F', MIA: '#008E97', NE: '#002244', NYJ: '#203731', OAK: '#A5ACAF', PIT: '#FFB612', SD: '#0073CF', TEN: '#4B92DB'
    },
-   chartColors = ['orange', 'white', 'cyan', 'green', 'gold'];
+   chartColors = ['cyan', 'orange', 'green', '#eee', 'gray'];
 
 $(document).ready(function() {
    // Chart.defaults.global.defaultFontColor = '#fff';
@@ -465,6 +500,7 @@ $(document).ready(function() {
          $('#yearList option[value="2016"]').attr("selected", "selected");
          getManagers();
          $('#dataHeading').text('Data');
+         $("input[name=managerRadio][value=0]").prop("checked",true);
          break;
       case '/players':
          setPage(2);

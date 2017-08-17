@@ -39,12 +39,37 @@ var playerSchema = new mongoose.Schema({
    passing_tds: Number
 });
 
+var recordSchema = new mongoose.Schema({
+   record: String,
+   manager: String,
+   year: Number,
+   week: Number
+   // wkHigh1 : Number,
+   // wkHigh2 : Number,
+   // wkHigh3: Number,
+   // wkLow1 : Number,
+   // wkLow2: Number,
+	// wkLow3: Number,
+   // wkHigh1_mgr : String,
+   // wkHigh2_mgr : String,
+   // wkHigh3_mgr: String,
+   // wkLow1_mgr : String,
+   // wkLow3_mgr: String,
+   // wkLow2_mgr: String,
+   // qbHigh: Number,
+   // rbHigh: Number,
+   // wrHigh: Number,
+   // idpHigh: Number
+});
+
 var League = mongoose.model('League', leagueSchema);
 var Managers = mongoose.model('Managers', managerSchema);
 var Players = mongoose.model('Players', playerSchema);
+var Records = mongoose.model('Records', recordSchema);
 
 module.exports = {
    League: League,
    Managers: Managers,
-   Players: Players
+   Players: Players,
+   Records: Records
 };

@@ -1,14 +1,14 @@
 var express = require('express'),
+   app = express(),
    compression = require('compression'),
    exec = require('child_process').exec,
-   crontab = require('node-crontab');
-
-var app = express();
-var routes = require('./routes/index'),
+   crontab = require('node-crontab'),
+   routes = require('./routes/index'),
    api = require('./routes/api');
+   
+app.use(compression());
 app.use('/', routes);
 app.use('/api', api);
-app.use(compression());
 app.use('/', express.static(__dirname + '/public'));
 app.set('view engine', 'pug');
 app.set('views', './views');

@@ -1,7 +1,7 @@
-// "use strict";
+// "use strict"
 $('#getStats').on('click', function () {
    event.preventDefault();
-   if ($('input[name="statRadio"]:checked').val() == 1) {
+   if ($('input[name="statRadio"]:checked').val() == 1) {  // Points data
       if ($('#yearList').val() != 'All'){
          if ($('input[name="managerRadio"]:checked').val() == 1) {
             displayManagerYear();
@@ -11,8 +11,12 @@ $('#getStats').on('click', function () {
       } else {
          displayAll();
       }
-   } else {
-      displayMinmax();
+   } else {  // Highs/Lows
+      if ($('#yearList').val() == 'All'){
+         displayMinmaxAll();
+      } else {
+         displayMinmax();
+      }
    }
 });
 
@@ -214,14 +218,14 @@ function displayAll (){
 function displayMinmax(){
    $.ajax({
       type: 'POST',
-      url: '/api/getminmaxstats',
+      url: '/api/getminmaxyear',
       data: {
          'year': $('#yearList').val()
       },
       success:function(retData){
          var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th onclick="sortTable(resultsArea, 1)">High</th><th>Manager</th><th onclick="sortTable(resultsArea, 3)">Low</th><th>Manager</th></tr>';
          for(i=0; i<13; i++) {
-            outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.highs[i]+'</td><td>'+retData.mgr1[i]+'</td><td>'+retData.lows[i]+'</td><td>'+retData.mgr2[i]+'</td></tr>';
+            outp += '<tr class="small"><td>'+(i+1)+'</td><td>'+retData.highs[i]+'</td><td>'+retData.high_managers[i]+'</td><td>'+retData.lows[i]+'</td><td>'+retData.low_managers[i]+'</td></tr>';
          }
          outp += '</table>';
          document.getElementById("resultsArea").innerHTML = outp;
@@ -251,6 +255,47 @@ function displayMinmax(){
       },
       error: function(retData){
          console.log('Error getting player stats');
+      }
+   });
+}
+
+function displayMinmaxAll() {
+   $.ajax({
+      type: 'GET',
+      url: '/api/getminmaxall',
+      success: function(retData){
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th onclick="sortTable(resultsArea, 0)">Year</th><th onclick="sortTable(resultsArea, 1)">High</th><th>Manager</th><th onclick="sortTable(resultsArea, 3)">Low</th><th>Manager</th></tr>';
+         retData.years.forEach(function(year, idx){
+            outp += '<tr class="small"><td>'+year+'</td><td>'+retData.highs[idx]+'</td><td>'+retData.high_managers[idx]+'</td><td>'+retData.lows[idx]+'</td><td>'+retData.low_managers[idx]+'</td></tr>';
+         });
+         outp += '</table>';
+         document.getElementById("resultsArea").innerHTML = outp;
+         var ydata = [{
+            label: 'Weekly High',
+            type: 'line',
+            borderColor: 'orange',
+            // backgroundColor: '#244363',
+            data: retData.highs,
+         }, {
+            label: 'Weekly Avg',
+            type: 'line',
+            borderColor: '#eee',
+            // backgroundColor: '#eee',
+            data: retData.avgs
+         }, {
+            label: 'Weekly Low',
+            type: 'line',
+            borderColor: '#244363',
+            // backgroundColor: '#eee',
+            data: retData.lows
+         }];
+         drawChart('line-zero', retData.years, ydata);
+         // reset for no stacked bar chart
+         // chart1.options.scales.xAxes[0].stacked = false;
+         // chart1.options.scales.yAxes[0].stacked = false;
+      },
+      error: function(err){
+         console.log('error: '+err);
       }
    });
 }
@@ -392,84 +437,6 @@ function getManagers (){
    });
 }
 
-// function drawChart(num, xaxis, yaxis, axisLabels, zeroAxis, displayY2) {
-//    var tempChart = [chart1, chart2];
-//    tempChart[num-1].data.labels = xaxis;
-//    tempChart[num-1].data.datasets = yaxis;
-//    if (axisLabels) {
-//       tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
-//       tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
-//       tempChart[num-1].options.scales.xAxes[0].scaleLabel.labelString = axisLabels.xaxis;
-//    }
-//    if (displayY2) {
-//       tempChart[num-1].options.scales.yAxes[1].display = true;
-//    } else {
-//       tempChart[num-1].options.scales.yAxes[1].display = false;
-//    }
-//    if (zeroAxis) {
-//       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
-//    } else {
-//       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = false;
-//    }
-//    tempChart[num-1].update();
-//    $((num == 1)?'#chartArea':'#chartArea2').show();  // display just in case turned off
-// }
-   // var tempChart = [chart1, chart2];
-   // tempChart[num-1].data.labels = xaxis;
-   // tempChart[num-1].data.datasets = yaxis;
-   // if (axisLabels) {
-   //    tempChart[num-1].options.scales.yAxes[0].scaleLabel.labelString = axisLabels.y1axis;
-   //    tempChart[num-1].options.scales.yAxes[1].scaleLabel.labelString = axisLabels.y2axis;
-   //    tempChart[num-1].options.scales.xAxes[0].scaleLabel.labelString = axisLabels.xaxis;
-   // }
-   // if (displayY2) {
-   //    tempChart[num-1].options.scales.yAxes[1].display = true;
-   // } else {
-   //    tempChart[num-1].options.scales.yAxes[1].display = false;
-   // }
-   // if (zeroAxis) {
-   //    tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
-   // } else {
-   //    tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = false;
-   // }
-   // tempChart[num-1].update();
-   // $((num == 1)?'#chartArea':'#chartArea2').show();  // display just in case turned off
-
-// function initChart (ctx, type) {
-//    return new Chart(ctx, {
-//       type: type,
-//       data: {
-//          labels: [],
-//          datasets: []
-//       },
-//       options: {
-//          scales: {
-//             yAxes: [{
-//                position: 'left',
-//                id: 'left',
-//                gridLines: {
-//                   color: 'white'
-//                },
-//                scaleLabel: {
-//                   display: true,
-//                   color: 'white'
-//                }
-//             }, {
-//                position: 'right',
-//                id: 'right',
-//                scaleLabel: {
-//                   display: true,
-//                }
-//             }],
-//             xAxes: [{
-//                scaleLabel: {
-//                   display: true,
-//                }
-//             }]
-//          }
-//       }
-//    });
-// }
 var chart1, chart2,
    nfc = ['ATL', 'ARZ', 'CAR', 'CHI', 'DAL', 'DET', 'GB', 'MIN', 'NO', 'NYG', 'PHI', 'SEA', 'SF', 'STL', 'TB', 'WAS' ],
    afc = ['BAL', 'BUF', 'CIN', 'CLE', 'DEN', 'HOU', 'KC', 'JAC', 'IND', 'MIA', 'NE', 'NYJ', 'OAK', 'PIT', 'SD', 'TEN'],

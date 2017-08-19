@@ -4,8 +4,8 @@ var express = require('express'),
    exec = require('child_process').exec,
    crontab = require('node-crontab'),
    routes = require('./routes/index'),
-   api = require('./routes/api');
-   
+   api = require('./routes/api').router;
+
 app.use(compression());
 app.use('/', routes);
 app.use('/api', api);

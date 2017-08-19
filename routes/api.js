@@ -1,4 +1,4 @@
-var express = require('express'),
+let express = require('express'),
    bodyParser = require('body-parser'),
    Managers = require('../models/dbschema').Managers,
    Players = require('../models/dbschema').Players,
@@ -23,49 +23,10 @@ router.post('/getmanagerstats', function(req,res){
 });
 
 router.post('/getmanagers', function(req,res){
-   var tmp = (req.body.year != 'All')?req.body.year:2016;
+   let tmp = (req.body.year != 'All')?req.body.year:2016;
    Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
       res.json(managers);
    }).sort({name:1});
-});
-
-function weeklyMinMax (yr, wk){
-   return new Promise(function(resolve, reject) {
-      League.find({week: wk, year: yr}, function(err, data){
-         var mgr1, high = 0, mgr2, low = 200, avg = 0;
-         data.forEach(function(manager) {
-            if (manager.total > high) {
-               high = manager.total;
-               mgr1 = manager.manager;
-            }
-            if (manager.total < low) {
-               low = manager.total;
-               mgr2 = manager.manager;
-            }
-            avg += manager.total;
-         });
-         avg = avg / data.length;
-         resolve ({high, mgr1, low, mgr2, avg});
-      });
-   });
-}
-
-router.post('/getminmaxstats', function(req,res){
-   var promises = [], highs = [], mgr1 = [], lows = [], mgr2 = [], avgs = [], weeks = [];
-   for (i=0; i<13; i++) {
-      promises.push(weeklyMinMax(req.body.year, i+1));
-      weeks.push(i+1);
-   }
-   Promise.all(promises).then(function(result){
-      result.forEach(function(item){
-         highs.push(item.high);
-         mgr1.push(item.mgr1);
-         lows.push(item.low);
-         mgr2.push(item.mgr2);
-         avgs.push(item.avg);
-      });
-      res.send({highs: highs, mgr1: mgr1, lows: lows, mgr2: mgr2, avgs: avgs, weeks: weeks});
-   });
 });
 
 router.post('/getleaguehistory', function(req,res){
@@ -74,9 +35,77 @@ router.post('/getleaguehistory', function(req,res){
    });
 });
 
+function weeklyMinMax (yr, wk){
+   return new Promise(function(resolve, reject) {
+      League.find({week: wk, year: yr}, function(err, data){
+         let high_manager, high = 0, low_manager, low = 300, avg = 0;
+         data.forEach(function(manager) {
+            if (manager.total > high) {
+               high = manager.total;
+               high_manager = manager.manager;
+            }
+            if (manager.total < low) {
+               low = manager.total;
+               low_manager = manager.manager;
+            }
+            avg += manager.total;
+         });
+         avg = avg / data.length;
+         resolve ({high, high_manager, low, low_manager, avg});
+      });
+   });
+}
+
+router.post('/getminmaxyear', function(req,res){
+   yearlyMinMax(req.body.year).then(function(data){
+      res.send(data);
+   });
+});
+
+function yearlyMinMax(year){
+   return new Promise(function(resolve, reject){
+      let promises = [], highs = [], high_managers = [], lows = [], low_managers = [], avgs = [], weeks = [];
+      for (i=0; i<13; i++) {
+         promises.push(weeklyMinMax(year, i+1));
+         weeks.push(i+1);  // week numbers that match minmax scores
+      }
+      Promise.all(promises).then(function(result){
+         result.forEach(function(week){
+            highs.push(week.high);
+            high_managers.push(week.high_manager);
+            lows.push(week.low);
+            low_managers.push(week.low_manager);
+            avgs.push(week.avg);
+         });
+         resolve({highs, high_managers, lows, low_managers, avgs, weeks});  // returns 13 weeks of minmax scorers
+      });
+   });
+}
+
+router.get('/getminmaxall', function(req,res){
+   let promises = [], highs = [], high_managers = [], lows = [], low_managers = [], avgs = [], years = [];
+
+   for (let i = 2009; i < 2017; i++) {
+      promises.push(yearlyMinMax(i));
+      years.push(i);
+   }
+
+   Promise.all(promises).then(function(results){
+      results.forEach(function(year, idx){
+         let max = Math.max(...year.highs);
+         highs.push(max);
+         high_managers.push(year.high_managers[year.highs.indexOf(max)]);
+         let min = Math.min(...year.lows);
+         lows.push(min);
+         low_managers.push(year.low_managers[year.lows.indexOf(min)]);
+      });
+      res.json ({highs, high_managers, lows, low_managers, years});
+   });
+});
+
 function yearlyTotals(mgr, year) {
    return new Promise(function (resolve, reject){
-      var totalQb = 0,
+      let totalQb = 0,
       totalRb = 0,
       totalWr = 0,
       totalIdp = 0,
@@ -147,7 +176,7 @@ router.post('/getplayers', function(req,res){
 
 function getTotals(plr, yr){
    Stats.find({player: plr, year: yr},function(err,stat){
-      var qb = 0,
+      let qb = 0,
       rb = 0,
       wr = 0,
       idp = 0,
@@ -165,4 +194,6 @@ function getTotals(plr, yr){
    });
 }
 
-module.exports = router;
+module.exports = {
+   router: router
+};

@@ -6,54 +6,13 @@ var mongoose = require('mongoose'),
    // Promise = require('promise'),
    Scraper = require('./models/scraper'),
    // Players = require('./models/dbschema').Players,
-   Managers = require('./models/dbschema').Managers;
-   League = require('./models/dbschema').League;
+   Managers = require('./models/dbschema').Managers,
+   League = require('./models/dbschema').League,
+   Api = require('./routes/api');
 
-mongoose.connect('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
+// mongoose.connect('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
+console.log(Api.alltimeMinMax());
 
-function scrape(yr) {
-   console.log(yr);
-   Managers.find({start:{$lte: yr}, end:{$gte: yr}}, function(err, results){
-      results.forEach(function(manager){
-         for (var week=1;week<14;week++){
-            Scraper.scrapeToDb(manager.num,week, yr);
-         }
-      });
-   });
-}
-
-function weeklyHigh (yr, wk){
-   return new Promise(function(resolve, reject) {
-      League.find({week: wk, year: yr}, function(err, data){
-         var high = 0, mgr = '';
-         data.forEach(function(manager) {
-            if (manager.total >high) {
-               high = manager.total;
-               mgr = manager.manager;
-            }
-         });
-         resolve ({high, mgr});
-      });
-   });
-}
-
-function yearlyHigh (yr){
-   var promises = [], highs = [], managers = [];
-   for (i=0; i<13; i++) {
-      promises.push(weeklyHigh(yr, i+1));
-   }
-   Promise.all(promises).then(function(result){
-      result.forEach(function(item){
-         highs.push(item.high);
-         managers.push(item.mgr);
-      });
-      console.log(highs, managers);
-   });
-}
-
-yearlyHigh(2016);
-
-// below goes through players db and calculates score for each record
 if (0) {
    Players.find({}, function(err, players) {
       players.forEach(function(rec){

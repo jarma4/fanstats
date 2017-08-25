@@ -1,7 +1,8 @@
 // "use strict"
 $('#getStats').on('click', function () {
    event.preventDefault();
-   if ($('input[name="statRadio"]:checked').val() == 1) {  // Points data
+   switch ($('input[name="statRadio"]:checked').val()) {
+   case '0':
       if ($('#yearList').val() != 'All'){
          if ($('input[name="managerRadio"]:checked').val() == 1) {
             displayManagerYear();
@@ -11,12 +12,17 @@ $('#getStats').on('click', function () {
       } else {
          displayAll();
       }
-   } else {  // Highs/Lows
+      break;
+   case '1': // Highs/Lows
       if ($('#yearList').val() == 'All'){
          displayMinmaxAll();
       } else {
          displayMinmax();
       }
+      break;
+   case '2':
+      displayAlltime();
+      break;
    }
 });
 
@@ -290,9 +296,45 @@ function displayMinmaxAll() {
             data: retData.lows
          }];
          drawChart('line-zero', retData.years, ydata);
-         // reset for no stacked bar chart
-         // chart1.options.scales.xAxes[0].stacked = false;
-         // chart1.options.scales.yAxes[0].stacked = false;
+      },
+      error: function(err){
+         console.log('error: '+err);
+      }
+   });
+}
+
+function displayAlltime() {
+   $.ajax({
+      type: 'GET',
+      url: '/api/getmanagertotals',
+      success: function(retData){
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th onclick="sortTable(resultsArea, 0)">Name</th><th onclick="sortTable(resultsArea, 1)">Years</th><th onclick="sortTable(resultsArea, 2)">Points</th><th onclick="sortTable(resultsArea, 3)">Avg</th></tr>';
+         retData.forEach(function(manager, idx){
+            outp += '<tr class="small"><td>'+manager.manager+'</td><td>'+manager.years+'</td><td>'+manager.total.toPrecision(5)+'</td><td>'+(manager.total/manager.years).toPrecision(5)+'</td></tr>';
+         });
+         outp += '</table>';
+         document.getElementById("resultsArea").innerHTML = outp;
+         sortTable(resultsArea, 3)
+         // var ydata = [{
+         //    label: 'Weekly High',
+         //    type: 'line',
+         //    borderColor: 'orange',
+         //    // backgroundColor: '#244363',
+         //    data: retData.highs,
+         // }, {
+         //    label: 'Weekly Avg',
+         //    type: 'line',
+         //    borderColor: '#eee',
+         //    // backgroundColor: '#eee',
+         //    data: retData.avgs
+         // }, {
+         //    label: 'Weekly Low',
+         //    type: 'line',
+         //    borderColor: '#244363',
+         //    // backgroundColor: '#eee',
+         //    data: retData.lows
+         // }];
+         // drawChart('line-zero', retData.years, ydata);
       },
       error: function(err){
          console.log('error: '+err);
@@ -329,19 +371,22 @@ function sortTable(target, col) {
 }
 
 function toggleManager(status){
-   if (status == 1) {
-      $('#managerList').removeAttr('disabled');
-   } else {
+   if (status > 0) {
+      $("input[name=managerRadio][value=1]").attr('disabled','disabled');
       $('#managerList').attr('disabled','disabled');
+   } else {
+      $("input[name=managerRadio][value=1]").removeAttr('disabled');
+      $('#managerList').removeAttr('disabled');
    }
 }
 
-$('input[name="managerRadio"]').change(function() {
-   toggleManager($(this).val());
-});
+// $('input[name="managerRadio"]').change(function() {
+//    toggleManager($(this).val());
+// });
 
 $('input[name="statRadio"]').change(function() {
-   $("input[name=managerRadio][value=0]").prop("checked",true);
+   if ($(this).val() > 0)
+      $("input[name=managerRadio][value=0]").prop("checked",true);
    toggleManager($(this).val());
 });
 //       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;

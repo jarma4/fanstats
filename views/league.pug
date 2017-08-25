@@ -11,14 +11,6 @@ block bar2
                input.form-check-input(type='radio', name='managerRadio' value='1', checked)
                | Per Manager
                select#managerList.form-control
-
-         //- .container-fluid
-         //-    .row
-         //-       .col-sm-1
-         //-       .col-sm-11
-         //-          .form-group
-         //-             label(for='managerList') Manager:
-         //-             select#managerList.form-control
       .groupbox
          .form-group.input-historical
             label(for='year') Year:
@@ -26,11 +18,15 @@ block bar2
       .groupbox
          .form-check
             label.form-check-label
-               input.form-check-input(type='radio', name='statRadio' value='1', checked)
-               |&nbsp Points Data
+               input.form-check-input(type='radio', name='statRadio' value='0', checked)
+               |&nbsp Position Points
          .form-check
             label.form-check-label
-               input.form-check-input(type='radio', name='statRadio' value='0')
-               |&nbsp Highs/Lows
+               input.form-check-input(type='radio', name='statRadio' value='1')
+               |&nbsp High/Low Scores
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='statRadio' value='2')
+               |&nbsp Alltime Points
       button#getStats.btn.btn-primary.btn-block.top #[i.fa.fa-bar-chart.fa-2x] GO!
       //- button#testBtn.btn.btn-primary Test

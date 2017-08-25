@@ -157,6 +157,48 @@ function graphData(manager, year, end, dataArr) {
    });
 }
 
+function yearlyManagerTotal (mgr, yr){
+   return new Promise (function(resolve, reject){
+      League.find({manager:mgr,year:yr}, function(err, records){
+         let yearlytotal = 0;
+         if (err)
+            console.log(err);
+         else
+            records.forEach(function(record, idx){
+               yearlytotal += record.total;
+            });
+            resolve(yearlytotal);
+      });
+   });
+}
+
+function managerAvg(manager){
+   return new Promise(function(resolve, reject){
+      let promises = [], alltimetotal = 0;
+      for (let year = manager.start; year < ((manager.end==9999)?2017:manager.end+1); year++) {
+         promises.push(yearlyManagerTotal(manager.name, year));
+      }
+      Promise.all(promises).then(function(results){
+         results.forEach(function(record){
+            alltimetotal += record;
+         });
+         resolve({manager: manager.name, total : alltimetotal, years: results.length});
+      });
+   });
+}
+
+router.get('/getmanagertotals', function(req,res){
+   let promises = [], data = [];
+   Managers.find({}, function(err, records){
+      records.forEach(function(manager){
+         promises.push(managerAvg(manager));
+      });
+      Promise.all(promises).then(function(results){
+         res.send(results);
+      });
+   });
+});
+
 router.post('/getplayerstats', function(req,res){
    Players.find({$and: [{player: {$in: [req.body.player, req.body.player2, req.body.player3]}},
       (req.body.week)?{week: req.body.week}:{}]},function(err,stats){

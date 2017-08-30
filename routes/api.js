@@ -2,7 +2,8 @@ let express = require('express'),
    bodyParser = require('body-parser'),
    Managers = require('../models/dbschema').Managers,
    Players = require('../models/dbschema').Players,
-   League = require('../models/dbschema').League;
+   League = require('../models/dbschema').League,
+   Draft = require('../models/dbschema').Draft;
    // session = require('client-sessions'),
    // session = require('express-session'),
    mongoose = require('mongoose');
@@ -20,6 +21,16 @@ router.post('/getmanagerstats', function(req,res){
          res.json(results);
       }
    }).sort({week:1});
+});
+
+router.post('/getdraft', function(req,res){
+   Draft.find({year: req.body.year},function(err,results){
+      if (err)
+         console.log(err);
+      else {
+         res.json(results);
+      }
+   }).sort((req.body.sort == 1)?{position:1, cost:-1}:{cost:-1});
 });
 
 router.post('/getmanagers', function(req,res){

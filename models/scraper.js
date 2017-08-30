@@ -4,6 +4,7 @@ var request = require('request'),
    // Managers = require('./dbschema').Managers,
    // Players = require('./dbschema').Players,
    League = require('./dbschema').League,
+   Draft = require('./dbschema').Draft,
    mongoose = require('mongoose');
 
 var managers = [
@@ -34,7 +35,6 @@ module.exports = {
    	j.setCookie(cookie,target);
       cookie = request.cookie('espn_s2=AEBxSaW9ycfd5NvriDQOIas67vT98OWcxOACfZgZF89obw%2B6kQYe%2B6o5X9U1X0qJ%2B7NtbcWvZz43rqEM3Yh8il%2F0NCDOXjk7E%2Bm7a%2FsjAGzeNbkBeCXeG6oahdxHeWYBy6nLRV3FH6%2F8%2Fx4yENSZzqLtNttJO%2Fy7EcysL6TgRnTZszUh%2FpPqn0uahbp%2BU7Lc4OrTeKaOio2AOlqYnccWgGAV4XhClP6BQ5RG0v0XMJwfnjvuSPsKvvDQ0MQa6qNfG9w%3D');
    	j.setCookie(cookie,target);
-console.log(yr+' '+target);
    	request({
    		'url':target,
    		'jar': j
@@ -135,6 +135,41 @@ console.log(yr+' '+target);
    		 	        });
               }
            }
+      });
+   },
+   scrapeDraft: function(year){
+      var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId='+year;
+      var j = request.jar();
+      var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
+      j.setCookie(cookie,target);
+      cookie = request.cookie('SWID={8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}');
+      j.setCookie(cookie,target);
+      cookie = request.cookie('espn_s2=AEBxSaW9ycfd5NvriDQOIas67vT98OWcxOACfZgZF89obw%2B6kQYe%2B6o5X9U1X0qJ%2B7NtbcWvZz43rqEM3Yh8il%2F0NCDOXjk7E%2Bm7a%2FsjAGzeNbkBeCXeG6oahdxHeWYBy6nLRV3FH6%2F8%2Fx4yENSZzqLtNttJO%2Fy7EcysL6TgRnTZszUh%2FpPqn0uahbp%2BU7Lc4OrTeKaOio2AOlqYnccWgGAV4XhClP6BQ5RG0v0XMJwfnjvuSPsKvvDQ0MQa6qNfG9w%3D');
+      j.setCookie(cookie,target);
+      request({
+         'url':target,
+         'jar': j
+         }, function (err, response, body) {
+            if(!err && response.statusCode === 200) {
+               var $ = cheerio.load(body);
+               $('.tableBody').each(function(index){
+                  let playerInfo = $(this).children().next().text();
+                  let position = playerInfo.slice(playerInfo.indexOf('$')-2,playerInfo.indexOf('$'));
+                  if(position.slice(position.length-1) == '\xa0')
+                     position = playerInfo.substr(playerInfo.indexOf('$')-4,2).trim();
+                  else
+                     position = position.trim();
+                  new Draft ({
+                     player: playerInfo.slice(0,playerInfo.indexOf(',')),
+                     position: position,
+                     cost: playerInfo.slice(playerInfo.indexOf('$')+1),
+                     year: year
+                  }).save(function(err){
+                     if(err)
+                        console.log('Trouble adding draft item: '+err);
+                  });
+               });
+            }
       });
    }
 };

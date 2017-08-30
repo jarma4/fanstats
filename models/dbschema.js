@@ -7,6 +7,14 @@ var managerSchema = new mongoose.Schema({
    end: Number
 });
 
+var draftSchema = new mongoose.Schema({
+   manager: String,
+   player : String,
+   position : String,
+   cost : Number,
+   year: Number
+});
+
 var leagueSchema = new mongoose.Schema({
    year : Number,
    week : Number,
@@ -66,10 +74,11 @@ var League = mongoose.model('League', leagueSchema);
 var Managers = mongoose.model('Managers', managerSchema);
 var Players = mongoose.model('Players', playerSchema);
 var Records = mongoose.model('Records', recordSchema);
+var Draft = mongoose.model('Draft', draftSchema);
 
 module.exports = {
    League: League,
    Managers: Managers,
    Players: Players,
-   Records: Records
+   Draft: Draft
 };

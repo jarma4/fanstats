@@ -1,6 +1,9 @@
 // "use strict"
 $('#getStats').on('click', function () {
-   event.preventDefault();
+   showData();
+});
+
+function showData(){
    switch ($('input[name="statRadio"]:checked').val()) {
    case '0':
       if ($('#yearList').val() != 'All'){
@@ -23,8 +26,11 @@ $('#getStats').on('click', function () {
    case '2':
       displayAlltime();
       break;
+   case '3':
+      displayDraft(2);
+      break;
    }
-});
+}
 
 function managerTotals(data) {
    var outp = '',
@@ -308,33 +314,42 @@ function displayAlltime() {
       type: 'GET',
       url: '/api/getmanagertotals',
       success: function(retData){
+         $('#dataHeading1').text('Alltime Points');
+         $('#dataHeading2').text('');
          var outp = '<table class="table table-sm table-striped"><tr class="small"><th onclick="sortTable(resultsArea, 0)">Name</th><th onclick="sortTable(resultsArea, 1)">Years</th><th onclick="sortTable(resultsArea, 2)">Points</th><th onclick="sortTable(resultsArea, 3)">Avg</th></tr>';
          retData.forEach(function(manager, idx){
             outp += '<tr class="small"><td>'+manager.manager+'</td><td>'+manager.years+'</td><td>'+manager.total.toPrecision(5)+'</td><td>'+(manager.total/manager.years).toPrecision(5)+'</td></tr>';
          });
          outp += '</table>';
          document.getElementById("resultsArea").innerHTML = outp;
-         sortTable(resultsArea, 3)
-         // var ydata = [{
-         //    label: 'Weekly High',
-         //    type: 'line',
-         //    borderColor: 'orange',
-         //    // backgroundColor: '#244363',
-         //    data: retData.highs,
-         // }, {
-         //    label: 'Weekly Avg',
-         //    type: 'line',
-         //    borderColor: '#eee',
-         //    // backgroundColor: '#eee',
-         //    data: retData.avgs
-         // }, {
-         //    label: 'Weekly Low',
-         //    type: 'line',
-         //    borderColor: '#244363',
-         //    // backgroundColor: '#eee',
-         //    data: retData.lows
-         // }];
-         // drawChart('line-zero', retData.years, ydata);
+         sortTable(resultsArea, 3);
+         clearChart();
+      },
+      error: function(err){
+         console.log('error: '+err);
+      }
+   });
+}
+
+function displayDraft(sortBy) {
+   $.ajax({
+      type: 'POST',
+      url: '/api/getdraft',
+      data: {
+         year: $('#yearList').val(),
+         sort: sortBy
+      },
+      success: function(retData){
+         $('#dataHeading1').text('Draft');
+         $('#dataHeading2').text($('#yearList').val());
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th></tr>';
+         retData.forEach(function(pick, idx){
+            outp += '<tr class="small"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td></tr>';
+         });
+         outp += '</table>';
+         document.getElementById("resultsArea").innerHTML = outp;
+         // sortTable(resultsArea, 2);
+         clearChart();
       },
       error: function(err){
          console.log('error: '+err);
@@ -358,7 +373,7 @@ function sortTable(target, col) {
       shouldSwitch = false;
       x = rows[i].getElementsByTagName("TD")[col];
       y = rows[i + 1].getElementsByTagName("TD")[col];
-      if (Number(x.innerHTML) < Number(y.innerHTML)) {
+      if ((isNaN(Number(x.innerHTML))?x.innerHTML:Number(x.innerHTML)) < (isNaN(Number(y.innerHTML))?y.innerHTML:Number(y.innerHTML))) {
         shouldSwitch= true;
         break;
       }
@@ -380,9 +395,9 @@ function toggleManager(status){
    }
 }
 
-// $('input[name="managerRadio"]').change(function() {
-//    toggleManager($(this).val());
-// });
+$('#managerList').change(function() {
+   $("input[name=managerRadio][value=1]").prop("checked",true);
+});
 
 $('input[name="statRadio"]').change(function() {
    if ($(this).val() > 0)
@@ -391,9 +406,13 @@ $('input[name="statRadio"]').change(function() {
 });
 //       tempChart[num-1].options.scales.yAxes[0].ticks.beginAtZero = true;
 
-function drawChart(type, xaxis, yaxis) {
+function clearChart(){
    if (chart1)
       chart1.destroy();
+}
+
+function drawChart(type, xaxis, yaxis) {
+   clearChart();
    chart1 =  new Chart(document.getElementById("chartArea").getContext("2d"), {
       type: (type == 'pie')?'pie':(type.slice(0,3) == 'bar')?'bar':'line',
       data: {
@@ -464,21 +483,24 @@ function getWeek(date){
 
 // for Managers page
 function getManagers (){
-   $('#managerList').empty();
-   $.ajax({
-		type: 'POST',
-		url: '/api/getmanagers',
-      data: {
-         'year': $('#yearList').val()
-      },
-		success:function(retData){
-         $.each(retData, function(i, manager){
-            $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
-         });
-      },
-      error: function(retData){
-         console.log('Error getting managers');
-      }
+   return new Promise(function(resolve, reject){
+      $('#managerList').empty();
+      $.ajax({
+   		type: 'POST',
+   		url: '/api/getmanagers',
+         data: {
+            'year': $('#yearList').val()
+         },
+   		success:function(retData){
+            $.each(retData, function(i, manager){
+               $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
+            });
+            resolve();
+         },
+         error: function(retData){
+            console.log('Error getting managers');
+         }
+      });
    });
 }
 
@@ -510,9 +532,10 @@ $(document).ready(function() {
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
          $('#yearList option[value="2016"]').attr("selected", "selected");
-         getManagers();
-         $('#dataHeading').text('Data');
          $("input[name=managerRadio][value=0]").prop("checked",true);
+         getManagers().then(function(result){
+            showData();
+         });
          break;
       case '/players':
          setPage(2);

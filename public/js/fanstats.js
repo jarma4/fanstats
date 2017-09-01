@@ -342,9 +342,9 @@ function displayDraft(sortBy) {
       success: function(retData){
          $('#dataHeading1').text('Draft');
          $('#dataHeading2').text($('#yearList').val());
-         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th></tr>';
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Manager</th></tr>';
          retData.forEach(function(pick, idx){
-            outp += '<tr class="small"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td></tr>';
+            outp += '<tr class="small"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.manager+'</td></tr>';
          });
          outp += '</table>';
          document.getElementById("resultsArea").innerHTML = outp;

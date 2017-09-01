@@ -11,9 +11,8 @@ let mongoose = require('mongoose'),
    Api = require('./routes/api');
 
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
-
-Scraper.scrapeDraft(2012);
-// var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId=2016';
+// var year = 2016;
+// var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId='+year;
 // var j = request.jar();
 // var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
 // j.setCookie(cookie,target);
@@ -25,23 +24,28 @@ Scraper.scrapeDraft(2012);
 //    'url':target,
 //    'jar': j
 //    }, function (err, response, body) {
+//       var managerNum = [];
 //       if(!err && response.statusCode === 200) {
 //          var $ = cheerio.load(body);
+//          $('.tableHead a').each(function(index){
+//             managerNum.push(Number($(this).attr('href').split('&')[1].split('=')[1]));
+//                // let playerInfo = $(this).children().next().text();
+//             // console.log($(this).find('a').attr('href').split('&')[1].split('=')[1]);
+//             // $(this).find('.tableBody').each(function(index){
+//             //    console.log($(this).children().next().text());
+//             // });
+//          });
 //          $('.tableBody').each(function(index){
 //             let playerInfo = $(this).children().next().text();
-//             let name = playerInfo.slice(0,playerInfo.indexOf(','));
-//             let position = playerInfo.slice(playerInfo.indexOf('$')-2,playerInfo.indexOf('$'));
-//             if(position.slice(position.length-1) == '\xa0')
-//                position = playerInfo.substr(playerInfo.indexOf('$')-4,2).trim();
-//             else
-//                position = position.trim();
-//             let cost = playerInfo.slice(playerInfo.indexOf('$'));
-//             // console.log(playerInfo);
-//             console.log(name+' '+position+' '+cost);
+//             console.log(managers[managerNum[Math.floor(index / 18)]-1]);
+//             // console.log(playerInfo.slice(0,playerInfo.indexOf(',')));
 //          });
+//          console.log(managerNum);
 //       }
 // });
-
+for (var i = 2012; i < 2016; i++) {
+   Scraper.scrapeDraft(i);
+}
 if(0) {
    for (let i = 7; i < 13; i++) {
       addPlayerRecord(i,'Brown, A','WR');
@@ -62,25 +66,20 @@ function addPlayerRecord(week, player, position) {
    }).save();
    console.log('done');
 }
-
-// let url = 'http://www.oddsshark.com/nba/ats-standings';
-// request(url, function (err, response, body) {
-//    if(!err && response.statusCode === 200) {
-//       let $ = cheerio.load(body);
-//
-//       let teams = ['Golden State','LA Clippers','San Antonio','Oklahoma City','Cleveland','Houston','Memphis','Atlanta','Chicago','New Orleans','Miami','Washington','Toronto','Milwaukee','Boston','Utah','Indiana','Phoenix','Detroit','Dallas','Sacramento','Orlando','Charlotte','New York','LA Lakers','Minnesota','Brooklyn','Portland','Denver','Philadelphia'];
-//
-//       teams.forEach(function(name){
-//          let record = $('.base-table a:contains('+name+')').parent().next().text().split('-');
-//          let newproj = Number(record[0])/(Number(record[0])+Number(record[1]))*82;
-//          OUGame.findOne({team: name}, function(err, rec) {
-//             OUGame.update({team: name}, {win: record[0], loss: record[1], projection: newproj, status: (newproj > rec.line)?'Over':'Under'}, function(err, resp){
-//                if (err)
-//                   console.log('error');
-//                if (resp.n)
-//                   console.log('updated '+name+' record');
-//             });
-//          });
-//       });
-//    }
-// });
+var managers = [
+   'sergio',
+   'eric',   //out
+   'ed',
+   'kirk',
+   'john',
+   'tony',
+   'gary',
+   'haynos', //out
+   'kevin',
+   'ted',   //chuck out
+   'brooks', //steven, out
+   'ryan',
+   'aaron',
+   'jason',
+   'firdavs'
+];

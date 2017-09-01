@@ -152,6 +152,12 @@ module.exports = {
          }, function (err, response, body) {
             if(!err && response.statusCode === 200) {
                var $ = cheerio.load(body);
+               var managerNum = [];
+               // first find all manager via number in href
+               $('.tableHead a').each(function(index){
+                  managerNum.push(Number($(this).attr('href').split('&')[1].split('=')[1]));
+               });
+               // next find all picks and save to db
                $('.tableBody').each(function(index){
                   let playerInfo = $(this).children().next().text();
                   let position = playerInfo.slice(playerInfo.indexOf('$')-2,playerInfo.indexOf('$'));
@@ -160,6 +166,7 @@ module.exports = {
                   else
                      position = position.trim();
                   new Draft ({
+                     manager: managers[managerNum[Math.floor(index / 18)]-1],
                      player: playerInfo.slice(0,playerInfo.indexOf(',')),
                      position: position,
                      cost: playerInfo.slice(playerInfo.indexOf('$')+1),

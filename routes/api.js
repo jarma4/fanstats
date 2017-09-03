@@ -24,20 +24,52 @@ router.post('/getmanagerstats', function(req,res){
 });
 
 router.post('/getdraft', function(req,res){
-   Draft.find({year: req.body.year},function(err,results){
-      if (err)
-         console.log(err);
-      else {
-         res.json(results);
-      }
-   }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:{manager:1, cost:-1});
+   if(req.body.manager == 'all') {
+      Draft.find({year: req.body.year},function(err,results){
+         if (err)
+            console.log(err);
+         else {
+            res.json(results);
+         }
+      }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:{manager:1, cost:-1});
+   } else {
+      var promises = [];
+      getManagers(req.body.year).then(function(managers){
+         console.log(managers);
+         managers.forEach(function(manager){
+            promises.push(getTop5(manager.name, req.body.year));
+         });
+         Promise.all(promises).then(function(results){
+            res.send(results);
+         });
+      });
+   }
 });
 
+function getTop5 (manager, year){
+   return new Promise(function(resolve, reject){
+      Draft.find({year: year, manager: manager},function(err,results){
+         if (err)
+            console.log(err);
+         else {
+            resolve(results);
+         }
+      }).sort({cost:-1}).limit(5);
+   });
+}
+
+function getManagers(year){
+   return new Promise(function(resolve, reject){
+      let tmp = (year != 'All')?year:2016;
+      Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
+         resolve (managers);
+      }).sort({name:1});
+   });
+}
 router.post('/getmanagers', function(req,res){
-   let tmp = (req.body.year != 'All')?req.body.year:2016;
-   Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
-      res.json(managers);
-   }).sort({name:1});
+   getManagers(req.body.year).then(function(results){
+      res.send(results);
+   });
 });
 
 router.post('/getleaguehistory', function(req,res){

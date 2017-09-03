@@ -16,18 +16,18 @@ function showData(){
          displayAll();
       }
       break;
-   case '1': // Highs/Lows
+   case '1':
+      displayDraft(2);
+      break;
+   case '2': // Highs/Lows
       if ($('#yearList').val() == 'All'){
          displayMinmaxAll();
       } else {
          displayMinmax();
       }
       break;
-   case '2':
-      displayAlltime();
-      break;
    case '3':
-      displayDraft(2);
+      displayAlltime();
       break;
    }
 }
@@ -331,24 +331,37 @@ function displayAlltime() {
    });
 }
 
+function draftTable(retData){
+   var outp = '<table class="table table-sm"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Manager</th></tr>';
+   retData.forEach(function(pick, idx){
+      var color = {RB: 'orange', QB:'cyan', WR:'lightgreen', TE:'purple', LB:'#666', DE:'#666', S:'#666', CB:'#666', DT:'#666', K:'#000'};   
+      outp += '<tr class="small" bgcolor="'+color[pick.position]+'"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.manager+'</td></tr>';
+   });
+   outp += '</table>';
+   return (outp);
+}
 function displayDraft(sortBy) {
    $.ajax({
       type: 'POST',
       url: '/api/getdraft',
       data: {
          year: $('#yearList').val(),
+         manager: ($('input[name="managerRadio"]:checked').val() == 1)?$('#managerList').val():'all',
          sort: sortBy
       },
       success: function(retData){
          $('#dataHeading1').text('Draft');
          $('#dataHeading2').text($('#yearList').val());
-         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Manager</th></tr>';
-         retData.forEach(function(pick, idx){
-            outp += '<tr class="small"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.manager+'</td></tr>';
-         });
-         outp += '</table>';
-         document.getElementById("resultsArea").innerHTML = outp;
-         // sortTable(resultsArea, 2);
+         var inner;
+         if ($('input[name="managerRadio"]:checked').val() == '0') {
+            document.getElementById("resultsArea").innerHTML = draftTable(retData);
+         } else {
+            var collection='';
+            retData.forEach(function(manager){
+               collection += draftTable(manager);
+            });
+            document.getElementById("resultsArea").innerHTML = collection;
+         }
          clearChart();
       },
       error: function(err){
@@ -386,7 +399,7 @@ function sortTable(target, col) {
 }
 
 function toggleManager(status){
-   if (status > 0) {
+   if (status > 1) {
       $("input[name=managerRadio][value=1]").attr('disabled','disabled');
       $('#managerList').attr('disabled','disabled');
    } else {
@@ -400,7 +413,7 @@ $('#managerList').change(function() {
 });
 
 $('input[name="statRadio"]').change(function() {
-   if ($(this).val() > 0)
+   if ($(this).val() > 1)
       $("input[name=managerRadio][value=0]").prop("checked",true);
    toggleManager($(this).val());
 });

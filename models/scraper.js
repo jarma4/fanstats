@@ -1,7 +1,7 @@
 var request = require('request'),
    cheerio = require('cheerio'),
    fs = require('fs'),
-   // Managers = require('./dbschema').Managers,
+   Managers = require('./dbschema').Managers,
    // Players = require('./dbschema').Players,
    League = require('./dbschema').League,
    Draft = require('./dbschema').Draft,
@@ -18,16 +18,27 @@ var managers = [
    'haynos', //out
    'kevin',
    'ted',   //chuck out
-   'brooks', //steven, out
+   'brooks', //steven1, out
    'ryan',
    'aaron',
    'jason',
-   'firdavs'
+   'firdavs',
+   'erik',
+   'steven'
 ];
 
 module.exports = {
+   weeklyStats: function(){
+      Managers.find({start:{$lte: 2017}, end:{$gte: 2017}}, {name: 1},  function(err, managerList){
+         managerList.forEach(function(manager){
+               console.log(managers.indexOf(manager.name)+1);
+            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, 1, 2017);
+         });            
+      });      
+   },
    scrapeToDb: function (manager,wk,yr) {
    	var target = 'http://games.espn.com/ffl/boxscorequick?leagueId=170051&teamId='+(manager)+'&scoringPeriodId='+wk+'&seasonId='+yr+'&view=scoringperiod&version=quick';
+      console.log(target);
    	var j = request.jar();
       var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
       j.setCookie(cookie,target);
@@ -124,10 +135,10 @@ module.exports = {
       					wr1: start.first().parent().next().next().next().children().next().next().next().next().text(),
       					wr2: start.first().parent().next().next().next().next().children().next().next().next().next().text(),
       					wr3te: start.first().parent().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp1: start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp2: start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp3: (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()),
-      					k: start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text(),
+      					flex: start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text(),
+      					idp1: start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text(),
+      					idp2: (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()),
+      					idp3: start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text(),
       					total: $('.totalScore').first().text()
    		         }).save(function(err){
       				 if(err)

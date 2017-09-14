@@ -11,6 +11,19 @@ let mongoose = require('mongoose'),
    Api = require('./routes/api');
 
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
+var changeYear = [2009,2011,2012,2017];
+var formats = {
+   2009: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','k'],
+   2011: ['qb','rb1','rb2','wr1','wr2','wr3te','dst','k'],
+   2012: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','k'],
+   2017: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','flex'],
+};
+var year = 2017, outp = '';
+
+formats[changeYear.reduce((store,yr)=>(yr<=year)?yr:store)].forEach(function(position){
+   outp += '<td>'+position.replace(/[0-9]/g, '').toUpperCase()+'</td>';
+});
+console.log(outp);
 // var year = 2016;
 // var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId='+year;
 // var j = request.jar();
@@ -43,9 +56,7 @@ mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl
 //          console.log(managerNum);
 //       }
 // });
-for (var i = 2012; i < 2016; i++) {
-   Scraper.scrapeDraft(i);
-}
+
 if(0) {
    for (let i = 7; i < 13; i++) {
       addPlayerRecord(i,'Brown, A','WR');

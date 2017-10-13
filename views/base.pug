@@ -25,10 +25,6 @@ html
 			.row
 				.col-sm-2.powerbar
 					block bar2
-				.col-sm-5.grapharea
-					span#graphHeading
-					canvas#chartArea(width='300', height='320')
-					block col1
 				.col-sm-5.dataarea
 					.container-fluid
 						.row.justify-content-center
@@ -38,6 +34,10 @@ html
 								span#dataHeading2
 					#resultsArea
 					block col2
+				.col-sm-5.grapharea
+					span#graphHeading
+					canvas#chartArea(width='300', height='320')
+					block col1
 
 		script(src='http://code.jquery.com/jquery-3.2.1.min.js')
 		//- script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js")

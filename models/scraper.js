@@ -26,19 +26,19 @@ var managers = [
    'erik',
    'steven'
 ];
+var seasonStart = new Date(2017,8,7);
 
 module.exports = {
    weeklyStats: function(){
+      console.log('Getting Week '+getWeek(new Date())+' stats');
       Managers.find({start:{$lte: 2017}, end:{$gte: 2017}}, {name: 1},  function(err, managerList){
          managerList.forEach(function(manager){
-               console.log(managers.indexOf(manager.name)+1);
-            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, 1, 2017);
-         });            
-      });      
+            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, getWeek(new Date()), 2017);
+         });
+      });
    },
    scrapeToDb: function (manager,wk,yr) {
-   	var target = 'http://games.espn.com/ffl/boxscorequick?leagueId=170051&teamId='+(manager)+'&scoringPeriodId='+wk+'&seasonId='+yr+'&view=scoringperiod&version=quick';
-      console.log(target);
+         var target = 'http://games.espn.com/ffl/boxscorequick?leagueId=170051&teamId='+(manager)+'&scoringPeriodId='+wk+'&seasonId='+yr+'&view=scoringperiod&version=quick';
    	var j = request.jar();
       var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
       j.setCookie(cookie,target);
@@ -52,15 +52,15 @@ module.exports = {
    		}, function (err, response, body) {
    			if(!err && response.statusCode === 200) {
    				var $ = cheerio.load(body);
+               var rb = 0,
+               wr = 0,
+               idp = 0;
+               var league = new League({
+                  season: yr,
+                  week: wk,
+                  manager: managers[manager-1],
+               });
                if (yr < 2016) {
-                  var rb = 0,
-                  wr = 0,
-                  idp = 0;
-                  var league = new League({
-                     year: yr,
-      					week: wk,
-      					manager: managers[manager-1],
-                  });
                   $('.playertablePlayerName').each(function(index){
                      if (index < 10) {
                         switch ($(this).text().substr($(this).text().length-2).trim()) {
@@ -125,31 +125,31 @@ module.exports = {
                   });
                } else {
       				var start = $('.slot_0');
-      				new League ({
-      					year: yr,
-      					week: wk,
-      					manager: managers[manager-1],
-      					qb: start.first().next().next().next().next().text(),
-      					rb1: start.first().parent().next().children().next().next().next().next().text(),
-      					rb2: start.first().parent().next().next().children().next().next().next().next().text(),
-      					wr1: start.first().parent().next().next().next().children().next().next().next().next().text(),
-      					wr2: start.first().parent().next().next().next().next().children().next().next().next().next().text(),
-      					wr3te: start.first().parent().next().next().next().next().next().children().next().next().next().next().text(),
-      					flex: start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp1: start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					idp2: (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()),
-      					idp3: start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text(),
-      					total: $('.totalScore').first().text()
-   		         }).save(function(err){
-      				 if(err)
-      					 console.log('Trouble adding stat: '+err);
-   		 	        });
+   					league.qb =  start.first().next().next().next().next().text();
+   					league.rb1 =  start.first().parent().next().children().next().next().next().next().text();
+   					league.rb2 =  start.first().parent().next().next().children().next().next().next().next().text();
+   					league.wr1 =  start.first().parent().next().next().next().children().next().next().next().next().text();
+   					league.wr2 =  start.first().parent().next().next().next().next().children().next().next().next().next().text();
+   					league.te =  start.first().parent().next().next().next().next().next().children().next().next().next().next().text();
+                  if (start.first().parent().next().next().next().next().next().next().children().next().text().split('\xa0')[1].substr(0,2) == 'RB')
+		              league.rb3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
+                  else
+                     league.wr3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
+   					league.idp1 =  start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text();
+   					league.idp2 =  (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text());
+   					league.idp3 =  start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text();
+      				league.total = $('.totalScore').first().text();
+                  console.log(league);
+   		         // league.save(function(err){
+      				//  if(err)
+      				// 	 console.log('Trouble adding stat: '+err);
+                  //
               }
            }
       });
    },
-   scrapeDraft: function(year){
-      var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId='+year;
+   scrapeDraft: function(season){
+      var target = 'http://games.espn.com/ffl/tools/draftrecap?leagueId=170051&seasonId='+season;
       var j = request.jar();
       var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
       j.setCookie(cookie,target);
@@ -181,7 +181,7 @@ module.exports = {
                      player: playerInfo.slice(0,playerInfo.indexOf(',')),
                      position: position,
                      cost: playerInfo.slice(playerInfo.indexOf('$')+1),
-                     year: year
+                     season: season
                   }).save(function(err){
                      if(err)
                         console.log('Trouble adding draft item: '+err);
@@ -191,3 +191,13 @@ module.exports = {
       });
    }
 };
+
+function getWeek(date){
+      var dayTicks = 24 * 60 * 60 * 1000,
+            week = Math.ceil((date - seasonStart) / dayTicks / 7);
+      if (week < 0) {
+            return 1;
+      } else {
+            return week;
+      }
+}

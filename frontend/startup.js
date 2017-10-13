@@ -1,4 +1,5 @@
 var chart1, chart2,
+   seasonStart = new Date(2017,8,7),
    nfc = ['ATL', 'ARZ', 'CAR', 'CHI', 'DAL', 'DET', 'GB', 'MIN', 'NO', 'NYG', 'PHI', 'SEA', 'SF', 'STL', 'TB', 'WAS' ],
    afc = ['BAL', 'BUF', 'CIN', 'CLE', 'DEN', 'HOU', 'KC', 'JAC', 'IND', 'MIA', 'NE', 'NYJ', 'OAK', 'PIT', 'SD', 'TEN'],
    nflTeams = ['Atlanta', 'Arizona', 'Carolina', 'Chicago', 'Dallas', 'Detroit', 'Green Bay', 'Minnesota', 'New Orleans', 'N.Y. Giants', 'Philadelphia', 'Seattle', 'San Francisco', 'L.A. Rams', 'Tampa Bay', 'Washington', 'Baltimore', 'Buffalo', 'Cincinatti', 'Cleveland', 'Denver', 'Houston', 'Kansas City', 'Jacksonville', 'Indianapolis', 'Miami', 'New England', 'N.Y. Jets', 'Oakland', 'Pittsburgh', 'San Diego', 'Tennessee'],
@@ -25,8 +26,8 @@ $(document).ready(function() {
          for (var i=2009; i<2018; i++)
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2016"]').attr("selected", "selected");
-         $("input[name=managerRadio][value=1]").prop("checked",true);
+         $('#yearList option[value="2017"]').attr("selected", "selected");
+         $("input[name=managerRadio][value=0]").prop("checked",true);
          getManagers().then(function(result){
             showData();
          });
@@ -139,7 +140,7 @@ function getManagers (){
    		type: 'POST',
    		url: '/api/getmanagers',
          data: {
-            'year': $('#yearList').val()
+            'season': $('#yearList').val()
          },
    		success:function(retData){
             $.each(retData, function(i, manager){
@@ -152,6 +153,16 @@ function getManagers (){
          }
       });
    });
+}
+
+function getWeek(date){
+   var dayTicks = 24 * 60 * 60 * 1000,
+      week = Math.ceil((date - seasonStart) / dayTicks / 7);
+   if (week < 0) {
+      return 1;
+   } else {
+      return week;
+   }
 }
 
 // change navbar

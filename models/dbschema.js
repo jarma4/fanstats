@@ -12,19 +12,21 @@ var draftSchema = new mongoose.Schema({
    player : String,
    position : String,
    cost : Number,
-   year: Number
+   season: Number
 });
 
 var leagueSchema = new mongoose.Schema({
-   year : Number,
+   season : Number,
    week : Number,
    manager : String,
    qb: Number,
    rb1: Number,
    rb2: Number,
+   rb3: Number,
    wr1: Number,
    wr2: Number,
    wr3te: Number,
+   te: Number,
    flex: Number,
    idp1: Number,
    idp2: Number,
@@ -37,7 +39,7 @@ var leagueSchema = new mongoose.Schema({
 var playerSchema = new mongoose.Schema({
    player : String,
    position : String,
-   year: Number,
+   season: Number,
    week : Number,
    points: Number,
 	rushing_yards: Number,
@@ -51,7 +53,7 @@ var playerSchema = new mongoose.Schema({
 var recordSchema = new mongoose.Schema({
    record: String,
    manager: String,
-   year: Number,
+   season: Number,
    week: Number
    // wkHigh1 : Number,
    // wkHigh2 : Number,

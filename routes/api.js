@@ -14,7 +14,7 @@ router = express.Router();
 router.use(bodyParser.urlencoded({ extended: false }));
 
 router.post('/getmanagerstats', function(req,res){
-   League.find({manager: req.body.manager, year: req.body.year},function(err,results){
+   League.find({manager: req.body.manager, season: req.body.season},function(err,results){
       if (err)
          console.log(err);
       else {
@@ -25,7 +25,7 @@ router.post('/getmanagerstats', function(req,res){
 
 router.post('/getdraft', function(req,res){
    if(req.body.manager == 'all') {
-      Draft.find({year: req.body.year},function(err,results){
+      Draft.find({season: req.body.season},function(err,results){
          if (err)
             console.log(err);
          else {
@@ -34,10 +34,9 @@ router.post('/getdraft', function(req,res){
       }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:{manager:1, cost:-1});
    } else {
       var promises = [];
-      getManagers(req.body.year).then(function(managers){
-         console.log(managers);
+      getManagers(req.body.season).then(function(managers){
          managers.forEach(function(manager){
-            promises.push(getTop5(manager.name, req.body.year));
+            promises.push(getTop5(manager.name, req.body.season));
          });
          Promise.all(promises).then(function(results){
             res.send(results);
@@ -46,9 +45,9 @@ router.post('/getdraft', function(req,res){
    }
 });
 
-function getTop5 (manager, year){
+function getTop5 (manager, season){
    return new Promise(function(resolve, reject){
-      Draft.find({year: year, manager: manager},function(err,results){
+      Draft.find({season: season, manager: manager},function(err,results){
          if (err)
             console.log(err);
          else {
@@ -58,16 +57,16 @@ function getTop5 (manager, year){
    });
 }
 
-function getManagers(year){
+function getManagers(season){
    return new Promise(function(resolve, reject){
-      let tmp = (year != 'All')?year:2016;
+      let tmp = (season != 'All')?season:2016;
       Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
          resolve (managers);
       }).sort({name:1});
    });
 }
 router.post('/getmanagers', function(req,res){
-   getManagers(req.body.year).then(function(results){
+   getManagers(req.body.season).then(function(results){
       res.send(results);
    });
 });
@@ -80,7 +79,7 @@ router.post('/getleaguehistory', function(req,res){
 
 function weeklyMinMax (yr, wk){
    return new Promise(function(resolve, reject) {
-      League.find({week: wk, year: yr}, function(err, data){
+      League.find({week: wk, season: yr}, function(err, data){
          let high_manager, high = 0, low_manager, low = 300, avg = 0;
          data.forEach(function(manager) {
             if (manager.total > high) {
@@ -100,16 +99,16 @@ function weeklyMinMax (yr, wk){
 }
 
 router.post('/getminmaxyear', function(req,res){
-   yearlyMinMax(req.body.year).then(function(data){
+   yearlyMinMax(req.body.season).then(function(data){
       res.send(data);
    });
 });
 
-function yearlyMinMax(year){
+function yearlyMinMax(season){
    return new Promise(function(resolve, reject){
       let promises = [], highs = [], high_managers = [], lows = [], low_managers = [], avgs = [], weeks = [];
       for (i=0; i<13; i++) {
-         promises.push(weeklyMinMax(year, i+1));
+         promises.push(weeklyMinMax(season, i+1));
          weeks.push(i+1);  // week numbers that match minmax scores
       }
       Promise.all(promises).then(function(result){
@@ -134,19 +133,19 @@ router.get('/getminmaxall', function(req,res){
    }
 
    Promise.all(promises).then(function(results){
-      results.forEach(function(year, idx){
-         let max = Math.max(...year.highs);
+      results.forEach(function(season, idx){
+         let max = Math.max(...season.highs);
          highs.push(max);
-         high_managers.push(year.high_managers[year.highs.indexOf(max)]);
-         let min = Math.min(...year.lows);
+         high_managers.push(season.high_managers[season.highs.indexOf(max)]);
+         let min = Math.min(...season.lows);
          lows.push(min);
-         low_managers.push(year.low_managers[year.lows.indexOf(min)]);
+         low_managers.push(season.low_managers[season.lows.indexOf(min)]);
       });
       res.json ({highs, high_managers, lows, low_managers, years});
    });
 });
 
-function yearlyTotals(mgr, year) {
+function yearlyTotals(mgr, season) {
    return new Promise(function (resolve, reject){
       let totalQb = 0,
       totalRb = 0,
@@ -154,7 +153,7 @@ function yearlyTotals(mgr, year) {
       totalIdp = 0,
       totalK = 0,
       correction = 1,
-      query = {year: year};
+      query = {season: season};
       if (mgr != 'all') {
          query.manager = mgr;
       }
@@ -166,31 +165,31 @@ function yearlyTotals(mgr, year) {
                totalQb += rec.qb;
                totalRb += rec.rb1 + rec.rb2;
                totalWr += rec.wr1 + rec.wr2 + rec.wr3te;
-               totalIdp += ((year == 2011)?rec.dst:rec.idp1+rec.idp2+rec.idp3);
+               totalIdp += ((season == 2011)?rec.dst:rec.idp1+rec.idp2+rec.idp3);
                totalK += rec.k;
             });
             // most years have 12 players, correct if 10
             if (data.length/13 == 10) {
                correction = 1.16667;
-               year = year+'*';
+               season = season+'*';
             }
-            resolve([year, totalQb*correction, totalRb*correction, totalWr*correction, totalIdp*correction, totalK*correction]);
+            resolve([season, totalQb*correction, totalRb*correction, totalWr*correction, totalIdp*correction, totalK*correction]);
          }
       }).sort({week:1});
    });
 }
 
-function graphData(manager, year, end, dataArr) {
+function graphData(manager, season, end, dataArr) {
    return new Promise(function (resolve, reject){
-      yearlyTotals(manager, year).then(function(result){
+      yearlyTotals(manager, season).then(function(result){
          dataArr[5].push(result.pop());
          dataArr[4].push(result.pop());
          dataArr[3].push(result.pop());
          dataArr[2].push(result.pop());
          dataArr[1].push(result.pop());
          dataArr[0].push(result.pop());
-         if (year < end) {
-            graphData(manager, year+1, end, dataArr).then(function(){
+         if (season < end) {
+            graphData(manager, season+1, end, dataArr).then(function(){
                 resolve(dataArr);
             });
          } else {
@@ -202,7 +201,7 @@ function graphData(manager, year, end, dataArr) {
 
 function yearlyManagerTotal (mgr, yr){
    return new Promise (function(resolve, reject){
-      League.find({manager:mgr,year:yr}, function(err, records){
+      League.find({manager:mgr,season:yr}, function(err, records){
          let yearlytotal = 0;
          if (err)
             console.log(err);
@@ -218,8 +217,8 @@ function yearlyManagerTotal (mgr, yr){
 function managerAvg(manager){
    return new Promise(function(resolve, reject){
       let promises = [], alltimetotal = 0;
-      for (let year = manager.start; year < ((manager.end==9999)?2017:manager.end+1); year++) {
-         promises.push(yearlyManagerTotal(manager.name, year));
+      for (let season = manager.start; season < ((manager.end==9999)?2017:manager.end+1); season++) {
+         promises.push(yearlyManagerTotal(manager.name, season));
       }
       Promise.all(promises).then(function(results){
          results.forEach(function(record){
@@ -260,7 +259,7 @@ router.post('/getplayers', function(req,res){
 });
 
 function getTotals(plr, yr){
-   Stats.find({player: plr, year: yr},function(err,stat){
+   Stats.find({player: plr, season: yr},function(err,stat){
       let qb = 0,
       rb = 0,
       wr = 0,

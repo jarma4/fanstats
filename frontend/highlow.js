@@ -3,7 +3,7 @@ function displayMinmax(){
       type: 'POST',
       url: '/api/getminmaxyear',
       data: {
-         'year': $('#yearList').val()
+         'season': $('#yearList').val()
       },
       success:function(retData){
          var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th onclick="sortTable(resultsArea, 1)">High</th><th>Manager</th><th onclick="sortTable(resultsArea, 3)">Low</th><th>Manager</th></tr>';

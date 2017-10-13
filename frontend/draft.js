@@ -8,31 +8,33 @@ function draftTable(retData){
    return (outp);
 }
 function displayDraft(sortBy) {
-   $.ajax({
-      type: 'POST',
-      url: '/api/getdraft',
-      data: {
-         year: $('#yearList').val(),
-         manager: ($('input[name="managerRadio"]:checked').val() == 1)?$('#managerList').val():'all',
-         sort: sortBy
-      },
-      success: function(retData){
-         $('#dataHeading1').text('Draft');
-         $('#dataHeading2').text($('#yearList').val());
-         var inner;
-         if ($('input[name="managerRadio"]:checked').val() == '0') {
-            document.getElementById("resultsArea").innerHTML = draftTable(retData);
-         } else {
-            var collection='';
-            retData.forEach(function(manager){
-               collection += draftTable(manager);
-            });
-            document.getElementById("resultsArea").innerHTML = collection;
+   if ($('#yearList').val() != 'All') {
+      $.ajax({
+         type: 'POST',
+         url: '/api/getdraft',
+         data: {
+            season: $('#yearList').val(),
+            manager: ($('input[name="managerRadio"]:checked').val() == 1)?$('#managerList').val():'all',
+            sort: sortBy
+         },
+         success: function(retData){
+            $('#dataHeading1').text('Draft');
+            $('#dataHeading2').text($('#yearList').val());
+            var inner;
+            if ($('input[name="managerRadio"]:checked').val() == '0') {
+               document.getElementById("resultsArea").innerHTML = draftTable(retData);
+            } else {
+               var collection='';
+               retData.forEach(function(manager){
+                  collection += draftTable(manager);
+               });
+               document.getElementById("resultsArea").innerHTML = collection;
+            }
+            clearChart();
+         },
+         error: function(err){
+            console.log('error: '+err);
          }
-         clearChart();
-      },
-      error: function(err){
-         console.log('error: '+err);
-      }
-   });
+      });
+   }
 }

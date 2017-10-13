@@ -5,6 +5,7 @@ function managerTotals(data) {
    totalRb = 0,
    totalWr = 0,
    totalIdp = 0,
+   totalTe = 0,
    totalK = 0,
    totalTotal = 0,
    chartTotals = [],
@@ -13,9 +14,10 @@ function managerTotals(data) {
    $.each(data, function(i,rec){
       // process data to get totals
       totalQb += rec.qb;
-      totalRb += rec.rb1 + rec.rb2;
-      totalWr += rec.wr1 + rec.wr2 + rec.wr3te;
-      totalIdp += ((rec.year == 2011)?rec.dst:rec.idp1 + rec.idp2 + rec.idp3);
+      totalRb += rec.rb1 + rec.rb2 + ((rec.rb3)?rec.rb3:0);
+      totalWr += rec.wr1 + rec.wr2 + ((rec.wr3)?rec.wr3:0);
+      totalIdp += ((rec.season == 2011)?rec.dst:rec.idp1 + rec.idp2 + rec.idp3);
+      totalTe += rec.te;
       totalK += rec.k;
       totalTotal += rec.total;
       // store weekly data in array to chart later
@@ -24,13 +26,14 @@ function managerTotals(data) {
       // starting week 3, create running 3 week average
       chartAverage.push((i > 1)?(chartTotals[i]+chartTotals[i-1]+chartTotals[i-2])/3:null);
       // go ahead and store table rows for each week although not used when showing league
-      outp += '<tr class="small"><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+rec.wr3te+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+(($('#yearList').val()<2017)?rec.k:rec.flex)+'</td><td>'+rec.total+'</td></tr>';
+      outp += '<tr class="small"><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+((rec.season < 2017)?rec.wr3te:rec.te)+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+(($('#yearList').val()<2017)?rec.k:rec.te)+'</td><td>'+rec.total+'</td></tr>';
    });
    return {
       totalQb: totalQb,
       totalRb: totalRb,
       totalWr: totalWr,
       totalIdp: totalIdp,
+      totalTe: totalTe,
       totalK: totalK,
       totalTotal: totalTotal,
       chartTotals: chartTotals,
@@ -46,13 +49,13 @@ function displayManagerYear(){
       url: '/api/getmanagerstats',
       data: {
          'manager': $('#managerList').val(),
-         'year': $('#yearList').val()
+         'season': $('#yearList').val()
       },
       success:function(retData){
          $('#dataHeading1').text('Manager: '+$('#managerList').val());
          $('#dataHeading2').text('Year: '+$('#yearList').val());
          // create first table with weekly totals for single manager
-         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>QB</th><th>RB</th><th>RB</th><th>WR</th><th>WR</th><th>WRTE</th><th>IDP</th><th>IDP</th><th>IDP</th><th>'+(($('#yearList').val()<2017)?'K':'FLX')+'</th><th>Total</th></tr>';
+         var outp = '<table class="table table-sm table-striped"><tr class="small"><th>Wk</th><th>QB</th><th>RB</th><th>RB</th><th>WR</th><th>WR</th><th>'+(($('#yearList').val() < 2017)?'WRTE3':'TE')+'</th><th>IDP</th><th>IDP</th><th>IDP</th><th>'+(($('#yearList').val()<2017)?'K':'FLX')+'</th><th>Total</th></tr>';
          var totals = managerTotals(retData);
          outp += totals.outp + '</table>';
          // second table with positional totals for single manager
@@ -89,12 +92,14 @@ function displayLeagueYear(){
    leagueRb = 0,
    leagueWr = 0,
    leagueIdp = 0,
+   leagueTe = 0,
    leagueK = 0,
-   leagueTotal = 0;
+   leagueTotal = 0,
+   numweeks = 0;
    $('#dataHeading1').text('League Totals');
    $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total K</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Avg </th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'FLX')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager
@@ -107,18 +112,20 @@ function displayLeagueYear(){
             asynchronous: false,
             data: {
                'manager': manager,
-               'year': $('#yearList').val()
+               'season': $('#yearList').val()
             },
             success:function(retData){
+               numweeks = retData.length;
                // get totals for manager
                var totals = managerTotals(retData);
                if (totals.totalQb) {   // make sure data exists
-                  $('#leagueTable tr:last').after('<tr class="small"><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+'</td><td>'+totals.totalRb.toPrecision(4)+'</td><td>'+totals.totalWr.toPrecision(4)+'</td><td>'+totals.totalIdp.toPrecision(4)+'</td><td>'+totals.totalK.toPrecision(4)+'</td><td>'+totals.totalTotal.toPrecision(4)+'</td><td>'+(totals.totalTotal/13).toPrecision(4)+'</td></tr>');
+                  $('#leagueTable tr:last').after('<tr class="small"><td>'+manager+'</td><td>'+totals.totalQb.toPrecision(4)+'</td><td>'+totals.totalRb.toPrecision(4)+'</td><td>'+totals.totalWr.toPrecision(4)+'</td><td>'+totals.totalIdp.toPrecision(4)+'</td><td>'+(($('#yearList').val()<2017)?totals.totalK.toPrecision(4):totals.totalTe.toPrecision(4))+'</td><td>'+totals.totalTotal.toPrecision(4)+'</td><td>'+(totals.totalTotal/numweeks).toPrecision(4)+'</td></tr>');
                   leagueQb += totals.totalQb;
                   leagueRb += totals.totalRb;
                   leagueWr += totals.totalWr;
                   leagueIdp += totals.totalIdp;
                   leagueK += totals.totalK;
+                  leagueTe += totals.totalTe;
                   leagueTotal += totals.totalTotal;
                }
                resolve();
@@ -133,7 +140,7 @@ function displayLeagueYear(){
    });
    $.when.apply(undefined, promises).done(function(){
       sortTable(leagueTable, 4);
-      $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueTotal.toPrecision(5)+'</td><td>'+(leagueTotal/$('#managerList > option').length/13).toPrecision(5)+'</td></tr>');
+      $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+(($('#yearList').val()<2017)?leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3):leagueTe.toPrecision(4)+' ('+(leagueTe/leagueTotal*100).toPrecision(3))+'%)</td><td>'+leagueTotal.toPrecision(5)+'&nbsp</td><td>'+(leagueTotal/$('#managerList > option').length/(($('#yearList').val()!=seasonStart.getFullYear())?13:numweeks)).toPrecision(5)+'&nbsp</td></tr>');
       var ydata = [{
          label: 'Position Totals',
          type: 'pie',

@@ -26,7 +26,7 @@ function managerTotals(data) {
       // starting week 3, create running 3 week average
       chartAverage.push((i > 1)?(chartTotals[i]+chartTotals[i-1]+chartTotals[i-2])/3:null);
       // go ahead and store table rows for each week although not used when showing league
-      outp += '<tr class="small"><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+((rec.season < 2017)?rec.wr3te:rec.te)+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+(($('#yearList').val()<2017)?rec.k:rec.te)+'</td><td>'+rec.total+'</td></tr>';
+      outp += '<tr class="small"><td>'+rec.week+'</td><td>'+rec.qb+'</td><td>'+rec.rb1+'</td><td>'+rec.rb2+'</td><td>'+rec.wr1+'</td><td>'+rec.wr2+'</td><td>'+((rec.season < 2017)?rec.wr3te:rec.te)+'</td><td>'+rec.idp1+'</td><td>'+rec.idp2+'</td><td>'+rec.idp3+'</td><td>'+(($('#yearList').val()<2017)?rec.k:(rec.rb3)?rec.rb3:rec.wr3)+'</td><td>'+rec.total+'</td></tr>';
    });
    return {
       totalQb: totalQb,
@@ -59,8 +59,8 @@ function displayManagerYear(){
          var totals = managerTotals(retData);
          outp += totals.outp + '</table>';
          // second table with positional totals for single manager
-         outp += '<table class="table table-sm"><tr class="small"><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>Total K</th><th>Total</th></tr>';
-         outp += '<tr class="small"><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalK+' ('+(totals.totalK/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(5)+'</td></tr>';
+         outp += '<table class="table table-sm"><tr class="small"><th>Total QB</th><th>Total RB</th><th>Total WR</th><th>Total IDP</th><th>'+(($('#yearList').val()<2017)?'Total K':'Total TE')+'</th><th>Total</th></tr>';
+         outp += '<tr class="small"><td>'+totals.totalQb.toPrecision(4)+' ('+(totals.totalQb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalRb.toPrecision(4)+' ('+(totals.totalRb/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalWr.toPrecision(4)+' ('+(totals.totalWr/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalIdp.toPrecision(4)+' ('+(totals.totalIdp/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+(($('#yearList').val()<2017)?totals.totalK:totals.totalTe).toPrecision(4)+' ('+((($('#yearList').val()<2017)?totals.totalK:totals.totalTe)/totals.totalTotal*100).toPrecision(3)+'%)</td><td>'+totals.totalTotal.toPrecision(5)+'</td></tr>';
          document.getElementById("resultsArea").innerHTML = outp;
          // setup chart data
          var ydata = [{
@@ -99,7 +99,7 @@ function displayLeagueYear(){
    $('#dataHeading1').text('League Totals');
    $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'FLX')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'TE')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager

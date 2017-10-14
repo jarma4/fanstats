@@ -25,6 +25,7 @@ var leagueSchema = new mongoose.Schema({
    rb3: Number,
    wr1: Number,
    wr2: Number,
+   wr3: Number,
    wr3te: Number,
    te: Number,
    flex: Number,

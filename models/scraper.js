@@ -1,6 +1,7 @@
 var request = require('request'),
    cheerio = require('cheerio'),
    fs = require('fs'),
+   // Utils = require('./models/util'),
    Managers = require('./dbschema').Managers,
    // Players = require('./dbschema').Players,
    League = require('./dbschema').League,
@@ -26,14 +27,13 @@ var managers = [
    'erik',
    'steven'
 ];
-var seasonStart = new Date(2017,8,7);
 
 module.exports = {
-   weeklyStats: function(){
-      console.log('Getting Week '+getWeek(new Date())+' stats');
+   weeklyStats: function(wk){
+      console.log('Getting Week '+wk+' stats');
       Managers.find({start:{$lte: 2017}, end:{$gte: 2017}}, {name: 1},  function(err, managerList){
          managerList.forEach(function(manager){
-            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, getWeek(new Date()), 2017);
+            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, wk, 2017);
          });
       });
    },
@@ -139,11 +139,10 @@ module.exports = {
    					league.idp2 =  (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text());
    					league.idp3 =  start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text();
       				league.total = $('.totalScore').first().text();
-                  console.log(league);
-   		         // league.save(function(err){
-      				//  if(err)
-      				// 	 console.log('Trouble adding stat: '+err);
-                  //
+   		         league.save(function(err){
+                     if(err)
+                        console.log('Trouble adding stat: '+err);
+                  });
               }
            }
       });
@@ -189,15 +188,15 @@ module.exports = {
                });
             }
       });
-   }
-};
-
-function getWeek(date){
-      var dayTicks = 24 * 60 * 60 * 1000,
+   },
+   getWeek: function(date){
+      var seasonStart = new Date(2017,8,7),
+         dayTicks = 24 * 60 * 60 * 1000,
             week = Math.ceil((date - seasonStart) / dayTicks / 7);
       if (week < 0) {
             return 1;
       } else {
             return week;
       }
-}
+   }
+};

@@ -12,7 +12,11 @@ let mongoose = require('mongoose'),
 
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
-Scraper.scrapeToDb(6,5,2017);
+Scraper.weeklyStats(1);
+Scraper.weeklyStats(2);
+Scraper.weeklyStats(3);
+Scraper.weeklyStats(4);
+Scraper.weeklyStats(5);
 // var changeYear = [2009,2011,2012,2017];
 // var formats = {
 //    2009: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','k'],

@@ -4,20 +4,6 @@ block bar2
       .groupbox
          .form-check
             label.form-check-label
-               input.form-check-input(type='radio', name='managerRadio' value='0')
-               |&nbsp League Wide
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='managerRadio' value='1', checked)
-               | Per Manager
-               select#managerList.form-control
-      .groupbox
-         .form-group.input-historical
-            label(for='year') Year:
-            select#yearList.form-control
-      .groupbox
-         .form-check
-            label.form-check-label
                input.form-check-input(type='radio', name='statRadio' value='0', checked)
                |&nbsp Points Breakdown by Position
          .form-check
@@ -32,6 +18,20 @@ block bar2
             label.form-check-label
                input.form-check-input(type='radio', name='statRadio' value='1')
                |&nbsp Draft Recaps
+      .groupbox
+         .form-group.input-historical
+            label(for='year') Year:
+            select#yearList.form-control
+      .groupbox
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='managerRadio' value='0')
+               |&nbsp League Wide
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='managerRadio' value='1', checked)
+               | Per Manager
+               select#managerList.form-control
          
       button#getStats.btn.btn-primary.btn-block.top #[i.fa.fa-bar-chart.fa-2x] GO!
 

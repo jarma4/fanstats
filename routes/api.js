@@ -8,6 +8,8 @@ let express = require('express'),
    // session = require('express-session'),
    mongoose = require('mongoose');
 
+require('dotenv').config();
+
 mongoose.connect('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
 router = express.Router();

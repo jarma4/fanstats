@@ -17,21 +17,22 @@
   },
   "homepage": "https://github.com/jarma4/jarnigan.com#readme",
   "dependencies": {
-    "body-parser": "^1.17.2",
+    "body-parser": "^1.18.3",
     "cheerio": "^0.19.0",
-    "compression": "^1.6.2",
-    "express": "^4.13.3",
-    "mongoose": "^4.1.11",
+    "compression": "^1.7.3",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "mongoose": "^4.13.14",
     "node-crontab": "0.0.8",
-    "pug": "^2.0.0-rc.2",
-    "request": "^2.61.0"
+    "pug": "^2.0.3",
+    "request": "^2.87.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "gulp-nodemon": "^2.2.1",
     "gulp-plumber": "^1.1.0",
-    "gulp-uglify": "^3.0.0",
-    "webpack": "^3.5.5"
+    "gulp-uglify": "^3.0.1",
+    "webpack": "^3.12.0"
   }
 }

@@ -24,8 +24,9 @@ var managers = [
    'aaron',
    'jason',
    'firdavs',
-   'erik',
-   'steven'
+   'matt', //erik
+   'steven',
+
 ];
 
 module.exports = {
@@ -60,7 +61,27 @@ module.exports = {
                   week: wk,
                   manager: managers[manager-1],
                });
-               if (yr < 2016) {
+               if (yr > 2015) {
+                  var start = $('.slot_0');
+   					league.qb =  start.first().next().next().next().next().text();
+   					league.rb1 =  start.first().parent().next().children().next().next().next().next().text();
+   					league.rb2 =  start.first().parent().next().next().children().next().next().next().next().text();
+   					league.wr1 =  start.first().parent().next().next().next().children().next().next().next().next().text();
+   					league.wr2 =  start.first().parent().next().next().next().next().children().next().next().next().next().text();
+   					league.te =  start.first().parent().next().next().next().next().next().children().next().next().next().next().text();
+                  if (start.first().parent().next().next().next().next().next().next().children().next().text().split('\xa0')[1].substr(0,2) == 'RB')
+		              league.rb3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
+                  else
+                     league.wr3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
+   					league.idp1 =  start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text();
+   					league.idp2 =  (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text());
+   					league.idp3 =  start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text();
+      				league.total = $('.totalScore').first().text();
+   		         league.save(function(err){
+                     if(err)
+                        console.log('Trouble adding stat: '+err);
+                  });
+               } else {
                   $('.playertablePlayerName').each(function(index){
                      if (index < 10) {
                         switch ($(this).text().substr($(this).text().length-2).trim()) {
@@ -123,27 +144,7 @@ module.exports = {
                         console.log('Record saved');
                      }
                   });
-               } else {
-      				var start = $('.slot_0');
-   					league.qb =  start.first().next().next().next().next().text();
-   					league.rb1 =  start.first().parent().next().children().next().next().next().next().text();
-   					league.rb2 =  start.first().parent().next().next().children().next().next().next().next().text();
-   					league.wr1 =  start.first().parent().next().next().next().children().next().next().next().next().text();
-   					league.wr2 =  start.first().parent().next().next().next().next().children().next().next().next().next().text();
-   					league.te =  start.first().parent().next().next().next().next().next().children().next().next().next().next().text();
-                  if (start.first().parent().next().next().next().next().next().next().children().next().text().split('\xa0')[1].substr(0,2) == 'RB')
-		              league.rb3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
-                  else
-                     league.wr3 =  start.first().parent().next().next().next().next().next().next().children().next().next().next().next().text();
-   					league.idp1 =  start.first().parent().next().next().next().next().next().next().next().children().next().next().next().next().text();
-   					league.idp2 =  (start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text()=='--'?0:start.first().parent().next().next().next().next().next().next().next().next().children().next().next().next().next().text());
-   					league.idp3 =  start.first().parent().next().next().next().next().next().next().next().next().next().children().next().next().next().next().text();
-      				league.total = $('.totalScore').first().text();
-   		         league.save(function(err){
-                     if(err)
-                        console.log('Trouble adding stat: '+err);
-                  });
-              }
+               }
            }
       });
    },

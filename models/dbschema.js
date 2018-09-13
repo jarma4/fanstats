@@ -12,7 +12,9 @@ var draftSchema = new mongoose.Schema({
    player : String,
    position : String,
    cost : Number,
-   season: Number
+   season: Number,
+   pick: Number,
+   date: Date
 });
 
 var leagueSchema = new mongoose.Schema({

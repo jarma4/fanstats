@@ -68,10 +68,10 @@ function drawChart(type, xaxis, yaxis) {
 }
 
 function draftTable(retData){
-   var outp = '<table class="table table-sm"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Manager</th></tr>';
+   var outp = '<table class="table table-sm"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Pick</th><th onclick="displayDraft(4)">Manager</th></tr>';
    retData.forEach(function(pick, idx){
       var color = {RB: 'orange', QB:'cyan', WR:'lightgreen', TE:'purple', LB:'#666', DE:'#666', S:'#666', CB:'#666', DT:'#666', K:'#000'};
-      outp += '<tr class="small" bgcolor="'+color[pick.position]+'"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.manager+'</td></tr>';
+      outp += '<tr class="small" bgcolor="'+color[pick.position]+'"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.pick+'</td><td>'+pick.manager+'</td></tr>';
    });
    outp += '</table>';
    return (outp);
@@ -291,7 +291,7 @@ function displayLeagueYear(){
    $('#dataHeading1').text('League Totals');
    $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'TE')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th class="sort" onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'TE')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager
@@ -418,10 +418,10 @@ $(document).ready(function() {
    switch (window.location.pathname) {
       case '/':
          setPage(1);
-         for (var i=2009; i<2018; i++)
+         for (var i=2009; i<2019; i++)
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2017"]').attr("selected", "selected");
+         $('#yearList option[value="2018"]').attr("selected", "selected");
          $("input[name=managerRadio][value=0]").prop("checked",true);
          getManagers().then(function(result){
             showData();

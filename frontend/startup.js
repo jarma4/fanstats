@@ -23,10 +23,10 @@ $(document).ready(function() {
    switch (window.location.pathname) {
       case '/':
          setPage(1);
-         for (var i=2009; i<2018; i++)
+         for (var i=2009; i<2019; i++)
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2017"]').attr("selected", "selected");
+         $('#yearList option[value="2018"]').attr("selected", "selected");
          $("input[name=managerRadio][value=0]").prop("checked",true);
          getManagers().then(function(result){
             showData();

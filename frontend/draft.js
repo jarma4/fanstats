@@ -1,8 +1,8 @@
 function draftTable(retData){
-   var outp = '<table class="table table-sm"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Manager</th></tr>';
+   var outp = '<table class="table table-sm"><tr class="small"><th>Player</th><th onclick="displayDraft(1)">Position</th><th onclick="displayDraft(2)">Cost</th><th onclick="displayDraft(3)">Pick</th><th onclick="displayDraft(4)">Manager</th></tr>';
    retData.forEach(function(pick, idx){
       var color = {RB: 'orange', QB:'cyan', WR:'lightgreen', TE:'purple', LB:'#666', DE:'#666', S:'#666', CB:'#666', DT:'#666', K:'#000'};
-      outp += '<tr class="small" bgcolor="'+color[pick.position]+'"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.manager+'</td></tr>';
+      outp += '<tr class="small" bgcolor="'+color[pick.position]+'"><td>'+pick.player+'</td><td>'+pick.position+'</td><td>'+pick.cost+'</td><td>'+pick.pick+'</td><td>'+pick.manager+'</td></tr>';
    });
    outp += '</table>';
    return (outp);

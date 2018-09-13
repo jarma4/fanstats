@@ -33,7 +33,7 @@ router.post('/getdraft', function(req,res){
          else {
             res.json(results);
          }
-      }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:{manager:1, cost:-1});
+      }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:(req.body.sort == 3)?{pick: 1}:{manager:1, cost:-1});
    } else {
       var promises = [];
       getManagers(req.body.season).then(function(managers){

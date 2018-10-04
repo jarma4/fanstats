@@ -1,4 +1,32 @@
-// "use strict"
+function showData(){
+   switch ($('input[name="statRadio"]:checked').val()) {
+   case '0':
+      if ($('#yearList').val() != 'All'){
+         if ($('input[name="managerRadio"]:checked').val() == 1) {
+            displayManagerYear();
+         } else {
+            displayLeagueYear();
+         }
+      } else {
+         displayAll();
+      }
+      break;
+   case '1':
+      displayDraft(2);
+      break;
+   case '2': // Highs/Lows
+      if ($('#yearList').val() == 'All'){
+         displayMinmaxAll();
+      } else {
+         displayMinmax();
+      }
+      break;
+   case '3':
+      displayAlltime();
+      break;
+   }
+}
+
 function managerTotals(data) {
    var outp = '',
    totalQb = 0,

@@ -51,53 +51,6 @@ $(document).ready(function() {
       }
 });
 
-$('#yearList').change(function() {
-   getManagers();
-});
-
-$('#managerList').change(function() {
-   $("input[name=managerRadio][value=1]").prop("checked",true);
-});
-
-$('input[name="statRadio"]').change(function() {
-   if ($(this).val() > 1)
-      $("input[name=managerRadio][value=0]").prop("checked",true);
-   toggleManager($(this).val());
-});
-
-$('#getStats').on('click', function () {
-   showData();
-});
-
-function showData(){
-   switch ($('input[name="statRadio"]:checked').val()) {
-   case '0':
-      if ($('#yearList').val() != 'All'){
-         if ($('input[name="managerRadio"]:checked').val() == 1) {
-            displayManagerYear();
-         } else {
-            displayLeagueYear();
-         }
-      } else {
-         displayAll();
-      }
-      break;
-   case '1':
-      displayDraft(2);
-      break;
-   case '2': // Highs/Lows
-      if ($('#yearList').val() == 'All'){
-         displayMinmaxAll();
-      } else {
-         displayMinmax();
-      }
-      break;
-   case '3':
-      displayAlltime();
-      break;
-   }
-}
-
 function toggleManager(status){
    if (status > 1) {
       $("input[name=managerRadio][value=1]").attr('disabled','disabled');
@@ -108,41 +61,17 @@ function toggleManager(status){
    }
 }
 
-function sortTable(target, col) {
-  var table, rows, switching, i, x, y, shouldSwitch;
-  // table = document.getElementById(target);
-  switching = true;
-  while (switching) {
-    switching = false;
-    rows = target.getElementsByTagName("TR");
-    for (i = 1; i < (rows.length - 1); i++) {
-      //start by saying there should be no switching:
-      shouldSwitch = false;
-      x = rows[i].getElementsByTagName("TD")[col];
-      y = rows[i + 1].getElementsByTagName("TD")[col];
-      if ((isNaN(Number(x.innerHTML))?x.innerHTML:Number(x.innerHTML)) < (isNaN(Number(y.innerHTML))?y.innerHTML:Number(y.innerHTML))) {
-        shouldSwitch= true;
-        break;
-      }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-    }
-  }
-}
-
 // for Managers page
 function getManagers (){
    return new Promise(function(resolve, reject){
       $('#managerList').empty();
       $.ajax({
-   		type: 'POST',
-   		url: '/api/getmanagers',
+         type: 'POST',
+         url: '/api/getmanagers',
          data: {
             'season': $('#yearList').val()
          },
-   		success:function(retData){
+         success:function(retData){
             $.each(retData, function(i, manager){
                $('#managerList').append('<option value="'+manager.name+'">'+manager.name+'</option>');
             });
@@ -165,6 +94,30 @@ function getWeek(date){
    }
 }
 
+function sortTable(target, col) {
+  var table, rows, switching, i, x, y, shouldSwitch;  
+  // table = document.getElementById(target);
+  switching = true;
+  while (switching) {
+    switching = false;  
+    rows = target.getElementsByTagName("TR");
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:  
+      shouldSwitch = false;
+      x = rows[i].getElementsByTagName("TD")[col];
+      y = rows[i + 1].getElementsByTagName("TD")[col];
+      if ((isNaN(Number(x.innerHTML))?x.innerHTML:Number(x.innerHTML)) < (isNaN(Number(y.innerHTML))?y.innerHTML:Number(y.innerHTML))) {
+        shouldSwitch= true;  
+        break;
+      }    
+    }    
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);  
+      switching = true;
+    }    
+  }    
+}    
+
 // change navbar
 function setPage(num) {
    $('#navbar li:nth-child('+(num+1)%3+')').removeClass('active');
@@ -172,127 +125,3 @@ function setPage(num) {
    $('#navbar li:nth-child('+num+')').addClass('active');
 }
 
-// for Players page
-function getPlayers (){
-   $('#playerList').empty().append('empty');
-	$.ajax({
-		type: 'POST',
-		url: '/api/getplayers',
-      data: {
-         'position': $('#positionList').val(),
-      },
-      success:function(retData){
-			$.each(retData, function(i,player){
-				$('#playerList').append('<option value="'+player+'">'+player+'</option>');
-			});
-		},
-		error: function(retData){
-			alert(retData.type,retData.message);
-		}
-	});
-}
-
-$('#playerStats').on('click', function () {
-   event.preventDefault();
-   $.ajax({
-		type: 'POST',
-		url: '/api/getplayerstats',
-      data: {
-         'player': $('#playerList').val(),
-         // 'year': $('#yearList').val()
-      },
-		success:function(retData){
-         var weeks = [],
-			rushing_tds = [],
-         rushing_yards = [],
-			receive_tds = [],
-         receive_yards = [];
-         $.each(retData, function(i,rec){
-            weeks.push(rec.week);
-				rushing_yards.push(rec.rushing_yards);
-				receive_yards.push(rec.receive_yards);
-				rushing_tds.push(rec.rushing_tds);
-				receive_tds.push(rec.receive_tds);
-         });
-         var ydata = [{
-               label: 'Rushing Yards',
-               type: 'line',
-               borderColor: 'blue',
-               data: rushing_yards,
-               yAxisID: 'left'
-            }, {
-               label: 'Passing Yards',
-               type: 'line',
-               borderColor: 'green',
-               data: receive_yards,
-               yAxisID: 'left'
-            },	{
-               label: 'Rushing TDs',
-               // type: 'line',
-               borderColor: 'cyan',
-               backgroundColor: 'cyan',
-               data: rushing_tds,
-               yAxisID: 'right'
-            }, {
-               label: 'Passing TDs',
-               // type: 'line',
-               borderColor: 'greenyellow',
-               backgroundColor: 'greenyellow',
-               data: receive_tds,
-               yAxisID: 'right'
-            }],
-         labels = {
-            xaxis: 'Weeks',
-            y1axis: 'Yards',
-            y2axis: 'TDs'
-         };
-         drawChart('line', weeks, ydata);
-      },
-      error: function(retData){
-         console.log('Error getting player stats');
-      }
-   });
-});
-
-$('#defenseStats').on('click', function(){
-   event.preventDefault();
-   var xaxis = ['pass/rec', 'rush'];
-   $.ajax({
-		type: 'POST',
-		url: '/api/getplayerstats',
-      data: {
-         'player': $('#team1List').val(),
-         'player2': $('#team2List').val(),
-         'week': $('#weekList').val()
-      },
-		success:function(retData){
-         var colors = ["cyan", "greenyellow", "white", "green", "yellow"],
-            yardData = [],
-            tdData = [];
-         $.each(retData, function(i,rec) {
-            var obj = {data: []},
-               obj2 = {data: []};
-            obj.label = obj2.label = rec.player;
-            obj.type = obj2.type = 'bar';
-            obj.backgroundColor = obj2.backgroundColor = nflColors[rec.player];
-            obj.data.push(rec.passing_yards);
-            obj2.data.push(rec.passing_tds);
-            obj.data.push(rec.rushing_yards);
-            obj2.data.push(rec.rushing_tds);
-            yardData.push(obj);
-            tdData.push(obj2);
-         });
-         drawChart(1, xaxis, yardData, {xaxis: 'Teams', y1axis: 'Yards',
-            y2axis: ''}, true);
-         drawChart(2, xaxis, tdData, {xaxis: 'Teams', y1axis: 'TDs',
-               y2axis: ''}, true);
-      },
-      error: function(retData){
-         console.log('Error getting defensive stats');
-      }
-   });
-});
-
-$('#positionList').change(function() {
-   getPlayers();
-});

@@ -82,8 +82,12 @@ router.post('/getleaguehistory', function(req,res){
 function weeklyMinMax (yr, wk){
    return new Promise(function(resolve, reject) {
       League.find({week: wk, season: yr}, function(err, data){
-         let high_manager, high = 0, low_manager, low = 300, avg = 0;
-         data.forEach(function(manager) {
+         let high_manager, high, low_manager, low, avg = 0;
+         data.forEach(function(manager, index) {
+				if (index === 0) {
+					high = manager.total;
+					low = manager.total;
+				}
             if (manager.total > high) {
                high = manager.total;
                high_manager = manager.manager;

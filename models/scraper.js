@@ -32,14 +32,14 @@ var managers = [
 module.exports = {
    weeklyStats: function(wk){
       console.log('Getting Week '+wk+' stats');
-      Managers.find({start:{$lte: 2017}, end:{$gte: 2017}}, {name: 1},  function(err, managerList){
+      Managers.find({start:{$lte: 2018}, end:{$gte: 2018}}, {name: 1},  function(err, managerList){
          managerList.forEach(function(manager){
-            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, wk, 2017);
+            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, wk, 2018);
          });
       });
    },
    scrapeToDb: function (manager,wk,yr) {
-         var target = 'http://games.espn.com/ffl/boxscorequick?leagueId=170051&teamId='+(manager)+'&scoringPeriodId='+wk+'&seasonId='+yr+'&view=scoringperiod&version=quick';
+      var target = 'http://games.espn.com/ffl/boxscorequick?leagueId=170051&teamId='+(manager)+'&scoringPeriodId='+wk+'&seasonId='+yr+'&view=scoringperiod&version=quick';
    	var j = request.jar();
       var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
       j.setCookie(cookie,target);
@@ -191,7 +191,7 @@ module.exports = {
       });
    },
    getWeek: function(date){
-      var seasonStart = new Date(2017,8,7),
+      var seasonStart = new Date(2018,8,7),
          dayTicks = 24 * 60 * 60 * 1000,
             week = Math.ceil((date - seasonStart) / dayTicks / 7);
       if (week < 0) {

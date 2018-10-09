@@ -18,19 +18,21 @@
   "homepage": "https://github.com/jarma4/jarnigan.com#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "cheerio": "^0.19.0",
+    "cheerio": "^1.0.0-rc.2",
     "compression": "^1.7.3",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "mongoose": "^4.13.17",
     "node-crontab": "0.0.8",
     "pug": "^2.0.3",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "update": "^0.7.4"
   },
   "devDependencies": {
     "gulp-concat": "^2.6.1",
     "gulp-nodemon": "^2.2.1",
     "gulp-plumber": "^1.1.0",
+    "gulp-terser": "^1.1.5",
     "gulp-uglify": "^3.0.1",
     "webpack": "^3.12.0"
   }

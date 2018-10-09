@@ -21,6 +21,9 @@ function showData(){
          displayMinmax();
       }
       break;
+   case '4':
+      displayStreaks();
+      break;
    case '3':
       displayAlltime();
       break;

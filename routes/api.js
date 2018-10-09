@@ -4,6 +4,7 @@ let express = require('express'),
    Players = require('../models/dbschema').Players,
    League = require('../models/dbschema').League,
    Draft = require('../models/dbschema').Draft;
+   Streak = require('../models/dbschema').Streak;
    // session = require('client-sessions'),
    // session = require('express-session'),
    mongoose = require('mongoose');
@@ -244,6 +245,16 @@ router.get('/getmanagertotals', function(req,res){
       Promise.all(promises).then(function(results){
          res.send(results);
       });
+   });
+});
+
+router.post('/getstreaks', function(req,res){
+   Streak.find({season: req.body.season},function(err,results){
+      if (err)
+         console.log(err);
+      else {
+         res.json(results);
+      }
    });
 });
 

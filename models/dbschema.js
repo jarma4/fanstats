@@ -17,6 +17,16 @@ var draftSchema = new mongoose.Schema({
    date: Date
 });
 
+var streakSchema = new mongoose.Schema({
+   manager: String,
+   num: Number,
+   start : Number,
+   longestWin : Number,
+   longestLose : Number,
+   playoffs: Boolean,
+   season: Number
+});
+
 var leagueSchema = new mongoose.Schema({
    season : Number,
    week : Number,
@@ -81,10 +91,12 @@ var Managers = mongoose.model('Managers', managerSchema);
 var Players = mongoose.model('Players', playerSchema);
 var Records = mongoose.model('Records', recordSchema);
 var Draft = mongoose.model('Draft', draftSchema);
+var Streak = mongoose.model('Streak', streakSchema);
 
 module.exports = {
    League: League,
    Managers: Managers,
    Players: Players,
-   Draft: Draft
+   Draft: Draft,
+   Streak: Streak
 };

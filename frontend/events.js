@@ -1,6 +1,6 @@
 $('#yearList').change(function() {
 	getManagers().then(function(){
-      showData();
+   showData();
    });
 });
 

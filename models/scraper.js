@@ -30,11 +30,11 @@ var managers = [
 ];
 
 module.exports = {
-   weeklyStats: function(wk){
-      console.log('Getting Week '+wk+' stats');
-      Managers.find({start:{$lte: 2018}, end:{$gte: 2018}}, {name: 1},  function(err, managerList){
+   weeklyStats: function(season, week){
+      console.log('Getting Week '+week+' stats');
+      Managers.find({start:{$lte: season}, end:{$gte: season}}, {name: 1},  function(err, managerList){
          managerList.forEach(function(manager){
-            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, wk, 2018);
+            module.exports.scrapeToDb(managers.indexOf(manager.name)+1, week, season);
          });
       });
    },

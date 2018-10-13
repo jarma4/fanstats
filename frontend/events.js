@@ -1,3 +1,10 @@
+$('input[name="statRadio"]').change(function() {
+   if ($(this).val() > 1)
+      $("input[name=managerRadio][value=0]").prop("checked",true);
+   // toggleManager($(this).val());
+   showData();
+});
+
 $('#yearList').change(function() {
 	getManagers().then(function(){
    showData();
@@ -5,19 +12,13 @@ $('#yearList').change(function() {
 });
 
 $('#managerList').change(function() {
-   $("input[name=managerRadio][value=1]").prop("checked",true);
+	// $("input[name=managerRadio][value=1]").prop("checked",true);
+	showData();
 });
 
-$('input[name="statRadio"]').change(function() {
-   if ($(this).val() > 1)
-      $("input[name=managerRadio][value=0]").prop("checked",true);
-   toggleManager($(this).val());
-   showData();
-});
-
-$('#getStats').on('click', function () {
-   showData();
-});
+// $('#getStats').on('click', function () {
+//    showData();
+// });
 
 $('#playerStats').on('click', function () {
    event.preventDefault();

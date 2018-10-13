@@ -1,5 +1,6 @@
 var chart1, chart2,
-   seasonStart = new Date(2017,8,7),
+	currentSeason = 2018,
+   // seasonStart = new Date(2017,8,7),
    nfc = ['ATL', 'ARZ', 'CAR', 'CHI', 'DAL', 'DET', 'GB', 'MIN', 'NO', 'NYG', 'PHI', 'SEA', 'SF', 'STL', 'TB', 'WAS' ],
    afc = ['BAL', 'BUF', 'CIN', 'CLE', 'DEN', 'HOU', 'KC', 'JAC', 'IND', 'MIA', 'NE', 'NYJ', 'OAK', 'PIT', 'SD', 'TEN'],
    nflTeams = ['Atlanta', 'Arizona', 'Carolina', 'Chicago', 'Dallas', 'Detroit', 'Green Bay', 'Minnesota', 'New Orleans', 'N.Y. Giants', 'Philadelphia', 'Seattle', 'San Francisco', 'L.A. Rams', 'Tampa Bay', 'Washington', 'Baltimore', 'Buffalo', 'Cincinatti', 'Cleveland', 'Denver', 'Houston', 'Kansas City', 'Jacksonville', 'Indianapolis', 'Miami', 'New England', 'N.Y. Jets', 'Oakland', 'Pittsburgh', 'San Diego', 'Tennessee'],
@@ -26,7 +27,7 @@ $(document).ready(function() {
          for (var i=2009; i<2019; i++)
             $('#yearList').append('<option value="'+i+'">'+i+'</option>');
          $('#yearList').append('<option value="All">All</option>');
-         $('#yearList option[value="2018"]').attr("selected", "selected");
+         $('#yearList option[value="'+currentSeason+'"]').attr("selected", "selected");
          $("input[name=managerRadio][value=0]").prop("checked",true);
          getManagers().then(function(result){
             showData();
@@ -64,7 +65,8 @@ function toggleManager(status){
 // for Managers page
 function getManagers (){
    return new Promise(function(resolve, reject){
-      $('#managerList').empty();
+		$('#managerList').empty();
+		$('#managerList').append('<option value="League">League</option>');
       $.ajax({
          type: 'POST',
          url: '/api/getmanagers',
@@ -84,15 +86,15 @@ function getManagers (){
    });
 }
 
-function getWeek(date){
-   var dayTicks = 24 * 60 * 60 * 1000,
-      week = Math.ceil((date - seasonStart) / dayTicks / 7);
-   if (week < 0) {
-      return 1;
-   } else {
-      return week;
-   }
-}
+// function getWeek(date){
+//    var dayTicks = 24 * 60 * 60 * 1000,
+//       week = Math.ceil((date - seasonStart) / dayTicks / 7);
+//    if (week < 0) {
+//       return 1;
+//    } else {
+//       return week;
+//    }
+// }
 
 function sortTable(target, col) {
   var table, rows, switching, i, x, y, shouldSwitch;  
@@ -115,7 +117,9 @@ function sortTable(target, col) {
       rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);  
       switching = true;
     }    
-  }    
+  }   
+  $(target).find('th').removeClass('sort'); 
+  $(target).find('th:eq('+col+')').addClass('sort'); 
 }    
 
 // change navbar

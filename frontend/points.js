@@ -1,31 +1,37 @@
 function showData(){
    switch ($('input[name="statRadio"]:checked').val()) {
    case '0':
+      $('#dataHeading1').text('Points by Position');
+		$('#dataHeading2').text($('#yearList').val());
+		$('#yearList').removeAttr('disabled');
       if ($('#yearList').val() != 'All'){
-         if ($('input[name="managerRadio"]:checked').val() == 1) {
-            displayManagerYear();
-         } else {
+         if ($('#managerList').val() === 'League') {
             displayLeagueYear();
+			} else {
+            displayManagerYear();
          }
       } else {
          displayAll();
       }
       break;
-   case '1':
-      displayDraft(2);
-      break;
-   case '2': // Highs/Lows
+   case '1': // Highs/Lows
+      $('#dataHeading1').text('Highs/Lows');
+		$('#dataHeading2').text($('#yearList').val());
+		$('#yearList').removeAttr('disabled');
       if ($('#yearList').val() == 'All'){
          displayMinmaxAll();
       } else {
          displayMinmax();
       }
       break;
-   case '4':
-      displayStreaks();
+   case '2':
+      displayAlltime();
       break;
    case '3':
-      displayAlltime();
+      displayStreaks();
+      break;
+   case '4':
+      displayDraft(2);
       break;
    }
 }
@@ -127,10 +133,10 @@ function displayLeagueYear(){
    leagueK = 0,
    leagueTotal = 0,
    numweeks = 0;
-   $('#dataHeading1').text('League Totals');
-   $('#dataHeading2').text('Year: '+$('#yearList').val());
+   // $('#dataHeading1').text('League Totals');
+   // $('#dataHeading2').text('Year: '+$('#yearList').val());
    // create table and display, manager rows added later
-   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th class="sort" onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'TE')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
+   var outp = '<table id="leagueTable" class="table table-sm table-striped table-bordered"><tr class="small"><th>Who</th><th onclick="sortTable(leagueTable, 1)">Total QB</th><th onclick="sortTable(leagueTable, 2)">Total RB</th><th onclick="sortTable(leagueTable, 3)">Total WR</th><th onclick="sortTable(leagueTable, 4)">Total IDP</th><th onclick="sortTable(leagueTable, 5)">Total '+(($('#yearList').val()<2017)?'K':'TE')+'</th><th onclick="sortTable(leagueTable, 6)">Total</th><th onclick="sortTable(leagueTable, 7)">Wk Avg </th></tr></table>';
    document.getElementById("resultsArea").innerHTML = outp;
    var promises = [];
    // get totals for each manager
@@ -171,7 +177,7 @@ function displayLeagueYear(){
    });
    $.when.apply(undefined, promises).done(function(){
       sortTable(leagueTable, 4);
-      $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+(($('#yearList').val()<2017)?leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3):leagueTe.toPrecision(4)+' ('+(leagueTe/leagueTotal*100).toPrecision(3))+'%)</td><td>'+leagueTotal.toPrecision(5)+'&nbsp</td><td>'+(leagueTotal/$('#managerList > option').length/(($('#yearList').val()!=seasonStart.getFullYear())?13:numweeks)).toPrecision(5)+'&nbsp</td></tr>');
+      $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+(($('#yearList').val()<2017)?leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3):leagueTe.toPrecision(4)+' ('+(leagueTe/leagueTotal*100).toPrecision(3))+'%)</td><td>'+leagueTotal.toPrecision(5)+'&nbsp</td><td>'+(leagueTotal/$('#managerList > option').length/(($('#yearList').val()!= currentSeason)?13:numweeks)).toPrecision(5)+'&nbsp</td></tr>');
       var ydata = [{
          label: 'Position Totals',
          type: 'pie',

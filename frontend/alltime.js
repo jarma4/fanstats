@@ -1,4 +1,6 @@
 function displayAlltime() {
+	$('#yearList').val('All');
+	$('#yearList').attr('disabled','disabled');
    $.ajax({
       type: 'GET',
       url: '/api/getmanagertotals',

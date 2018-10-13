@@ -249,7 +249,8 @@ router.get('/getmanagertotals', function(req,res){
 });
 
 router.post('/getstreaks', function(req,res){
-   Streak.find({season: req.body.season},function(err,results){
+   // All only being sent now but leaving by season just in case
+   Streak.find((req.body.season == 'All')?{}:{season: req.body.season},function(err,results){
       if (err)
          console.log(err);
       else {

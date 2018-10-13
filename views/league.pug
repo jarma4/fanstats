@@ -5,39 +5,28 @@ block bar2
          .form-check
             label.form-check-label
                input.form-check-input(type='radio', name='statRadio' value='0', checked)
-               |&nbsp Points Breakdown by Position
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='statRadio' value='2')
-               |&nbsp League High/Low Points
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='statRadio' value='3')
-               |&nbsp League Alltime Points
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='statRadio' value='4')
-               |&nbsp Streaks
+               |&nbsp Points by Position
+               select#managerList.form-control
          .form-check
             label.form-check-label
                input.form-check-input(type='radio', name='statRadio' value='1')
+               |&nbsp High/Low Points
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='statRadio' value='2')
+               |&nbsp Alltime Points
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='statRadio' value='3')
+               |&nbsp Streaks
+         .form-check
+            label.form-check-label
+               input.form-check-input(type='radio', name='statRadio' value='4')
                |&nbsp Draft Recaps
       .groupbox
          .form-group.input-historical
             label(for='year') Year:
             select#yearList.form-control
-      .groupbox
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='managerRadio' value='0')
-               |&nbsp League Wide
-         .form-check
-            label.form-check-label
-               input.form-check-input(type='radio', name='managerRadio' value='1', checked)
-               | Per Manager
-               select#managerList.form-control
-         
-      button#getStats.btn.btn-primary.btn-block.top #[i.fa.fa-bar-chart.fa-2x] GO!
 
 block scripts
    //- script(type='text/javascript') showData()

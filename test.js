@@ -35,7 +35,10 @@ var managers = [
 require('dotenv').config();
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
-for(let season=2009; season<2018; ++season){
+Scraper.weeklyStats(2018,5);
+
+// scrapes for playoffs attendence
+if (0){
    var target = 'http://games.espn.com/ffl/standings?leagueId=170051&seasonId='+season;
    var j = request.jar();
    var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
@@ -63,7 +66,6 @@ for(let season=2009; season<2018; ++season){
    });
 }
 
-
 function getManagers(season){
    return new Promise(function(resolve, reject){
       let tmp = (season != 'All')?season:2016;
@@ -73,6 +75,7 @@ function getManagers(season){
    });
 }
 
+// scrapes for record streaks
 if(0) {
    getManagers(season).then((managers)=>{
       managers.forEach((manager)=>{

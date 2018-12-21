@@ -1,1 +1,0 @@
-{"options":{"autoIndexId":true},"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"vcl.league"},{"v":1,"key":{"manager":1,"year":1},"name":"manager_1_year_1","ns":"vcl.league"}]}

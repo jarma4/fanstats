@@ -85,9 +85,11 @@ function weeklyMinMax (yr, wk){
       League.find({week: wk, season: yr}, function(err, data){
          let high_manager, high, low_manager, low, avg = 0;
          data.forEach(function(manager, index) {
-				if (index === 0) {
-					high = manager.total;
+            if (index === 0) {
+               high = manager.total;
 					low = manager.total;
+					high_manager = manager.manager;
+					low_manager = manager.manager;
 				}
             if (manager.total > high) {
                high = manager.total;

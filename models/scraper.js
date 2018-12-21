@@ -191,7 +191,7 @@ module.exports = {
       });
    },
    getWeek: function(date){
-      var seasonStart = new Date(2018,8,7),
+      var seasonStart = new Date(2018,8,5),
          dayTicks = 24 * 60 * 60 * 1000,
             week = Math.ceil((date - seasonStart) / dayTicks / 7);
       if (week < 0) {

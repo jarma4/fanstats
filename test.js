@@ -35,7 +35,9 @@ var managers = [
 require('dotenv').config();
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
-Scraper.weeklyStats(2018,5);
+for (let week=10;week<14;week++){
+   Scraper.weeklyStats(2018,week);
+}
 
 // scrapes for playoffs attendence
 if (0){

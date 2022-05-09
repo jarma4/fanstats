@@ -3,4 +3,4 @@ Personal project to store ESPN fantasy football league stats over the years and 
 
 Uses:
 - Backend uses nodeJS and Express as webserver and MongoDB as database storage.  Cheerio used to scrape website for stats.
-- Frontend uses Bootstrap
+- Frontend uses Bootstrap nad ChartJS

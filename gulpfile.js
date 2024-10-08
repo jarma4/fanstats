@@ -1,41 +1,31 @@
 var gulp = require('gulp'),
    nodemon = require('gulp-nodemon'),
-   // uglify = require('gulp-uglify'),
-   terser = require('gulp-terser'),
+	terser = require('gulp-terser'),
    // sass = require('gulp-sass'),
    // cssnano = require('gulp-cssnano'),
    // rename = require('gulp-rename'),
    concat = require('gulp-concat'),
    plumber = require('gulp-plumber');
 
-gulp.task('scripts', function(){
-   gulp.src('./frontend/*.js')
+function jsTask(){
+   return gulp.src('frontend/*.js')
       .pipe(plumber())
       .pipe(concat('bundle.js'))
       .pipe(terser())
-      .pipe(gulp.dest('./public/js'));
-});
+      .pipe(gulp.dest('public/js'));
+}
 
-// gulp.task('styles', function(){
-//    gulp.src('./frontend/*.scss')
-//       .pipe(plumber())
-//       .pipe(sass())
-//       .pipe(cssnano())
-//       .pipe(gulp.dest('./public/css'));
-// });
+function watch1Task(){
+   gulp.watch('frontend/*.js',jsTask);
+}
 
-gulp.task('watch', function(){
-   gulp.watch('./frontend/*.js', ['scripts']);
-   // gulp.watch('./frontend/*.scss', ['styles']);
-});
-
-gulp.task('start', function () {
-   nodemon({
+function startTask() {
+   return nodemon({
       script: 'app.js',
       ext: 'js',
       ignore: ['frontend/*', 'public/*'],
       env: { 'NODE_ENV': 'development' }
    });
-});
+}
 
-gulp.task('default', ['start', 'watch']);
+exports.default = gulp.parallel(startTask, watch1Task);

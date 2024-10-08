@@ -118,8 +118,8 @@ function sortTable(target, col) {
       switching = true;
     }    
   }   
-  $(target).find('th').removeClass('sort'); 
-  $(target).find('th:eq('+col+')').addClass('sort'); 
+  $(target).find('th').removeClass('text-danger'); 
+  $(target).find('th:eq('+col+')').addClass('text-danger'); 
 }    
 
 // change navbar

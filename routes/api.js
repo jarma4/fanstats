@@ -1,10 +1,11 @@
-let express = require('express'),
+const express = require('express'),
    bodyParser = require('body-parser'),
    Managers = require('../models/dbschema').Managers,
    Players = require('../models/dbschema').Players,
    League = require('../models/dbschema').League,
-   Draft = require('../models/dbschema').Draft;
-   Streak = require('../models/dbschema').Streak;
+   Draft = require('../models/dbschema').Draft,
+   Streak = require('../models/dbschema').Streak,
+   Util = require('../models/util');
    // session = require('client-sessions'),
    // session = require('express-session'),
    mongoose = require('mongoose');
@@ -37,7 +38,7 @@ router.post('/getdraft', function(req,res){
       }).sort((req.body.sort == 1)?{position:1, cost:-1}:(req.body.sort == 2)?{cost:-1}:(req.body.sort == 3)?{pick: 1}:{manager:1, cost:-1});
    } else {
       var promises = [];
-      getManagers(req.body.season).then(function(managers){
+      Util.getManagers(req.body.season).then(function(managers){
          managers.forEach(function(manager){
             promises.push(getTop5(manager.name, req.body.season));
          });
@@ -60,16 +61,8 @@ function getTop5 (manager, season){
    });
 }
 
-function getManagers(season){
-   return new Promise(function(resolve, reject){
-      let tmp = (season != 'All')?season:2016;
-      Managers.find({start:{$lte: tmp}, end:{$gte: tmp}}, {name: 1},  function(err, managers){
-         resolve (managers);
-      }).sort({name:1});
-   });
-}
 router.post('/getmanagers', function(req,res){
-   getManagers(req.body.season).then(function(results){
+   Util.getManagers(req.body.season).then(function(results){
       res.send(results);
    });
 });

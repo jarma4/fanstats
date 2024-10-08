@@ -176,7 +176,7 @@ function displayLeagueYear(){
       promises.push(tmp);
    });
    $.when.apply(undefined, promises).done(function(){
-      sortTable(leagueTable, 4);
+      sortTable(leagueTable, 6);
       $('#leagueTable tr:last').after('<tr class="table-danger small"><td>League</td><td>'+leagueQb.toPrecision(4)+' ('+(leagueQb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueRb.toPrecision(4)+' ('+(leagueRb/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueWr.toPrecision(4)+' ('+(leagueWr/leagueTotal*100).toPrecision(3)+'%)</td><td>'+leagueIdp.toPrecision(4)+' ('+(leagueIdp/leagueTotal*100).toPrecision(3)+'%)</td><td>'+(($('#yearList').val()<2017)?leagueK.toPrecision(4)+' ('+(leagueK/leagueTotal*100).toPrecision(3):leagueTe.toPrecision(4)+' ('+(leagueTe/leagueTotal*100).toPrecision(3))+'%)</td><td>'+leagueTotal.toPrecision(5)+'&nbsp</td><td>'+(leagueTotal/$('#managerList > option').length/(($('#yearList').val()!= currentSeason)?13:numweeks)).toPrecision(5)+'&nbsp</td></tr>');
       var ydata = [{
          label: 'Position Totals',

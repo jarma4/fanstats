@@ -10,9 +10,10 @@ let mongoose = require('mongoose'),
    League = require('./models/dbschema').League,
    Draft = require('./models/dbschema').Draft,
    Streak = require('./models/dbschema').Streak,
-   Api = require('./routes/api');
+   Api = require('./routes/api'),
+	puppeteer = require('puppeteer');
 
-var managers = [
+let managers = [
    'sergio',
    'eric',   //out
    'ed',
@@ -35,15 +36,72 @@ var managers = [
 require('dotenv').config();
 mongoose.createConnection('mongodb://vcl:'+process.env.BAF_MONGO+'@127.0.0.1/vcl',{useMongoClient: true});
 
-for (let week=10;week<14;week++){
-   Scraper.weeklyStats(2018,week);
+async function scrape() {
+   let yr=2019,manager=6,wk=4;
+   let loginPage = 'https://www.espn.com/login';
+	const browser = await puppeteer.launch({headless: true});
+	// const browser = await puppeteer.launch();
+   const page = await browser.newPage();
+   await page.goto(loginPage, {waitUntil: 'networkidle2'});
+   
+   const frames = await page.frames();
+   const loginFrame = frames.find(f => f.name() === 'disneyid-iframe');
+   // console.log(loginFrame.name());
+   // await page.$eval('input[type="password"]', el1 => el1.value='jarma4');
+   console.log('start');
+   await loginFrame.type('input[type="email"]', 'jarma4');
+   await loginFrame.type('input[type="password"]', 'memph1s');
+   await loginFrame.click('button[type="submit"]');
+   console.log('next');
+   // await loginFrame.waitForNavigation();
+   console.log('waitied');
+
+
+   let statsPage = 'https://fantasy.espn.com/football/boxscore?leagueId=170051&matchupPeriodId='+wk+'&scoringPeriodId='+wk+'&seasonId='+yr+'&teamId='+manager;
+   await page.goto(statsPage, {waitUntil: 'networkidle2'});
+   console.log('almost there');
+   console.log(page.title());
+   // const test = await page.$eval('[data-idx="0"]', res => {console.log('found')});
+   let rb = 0,
+   wr = 0,
+   idp = 0;
+   // let league = new League({
+   //    season: yr,
+   //    week: wk,
+   //    manager: managers[manager-1],
+   // });
+   // $('[data-idx="0"]').each((idx, result) =>{
+   //    console.log(idx);
+   // });
+   await browser.close();
+	// return;
 }
+
+scrape();
+
+
+
+   // const cookies = [{
+   //    name: 'espnAuth',
+   //    value: '{"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}',
+   //    url: url
+   // },{
+   //    name: 'SWID',
+   //    value: '{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}',
+   //    url: url
+   // }, {
+   //    name: 'espn_s2',
+   //    value: 'AEBxSaW9ycfd5NvriDQOIas67vT98OWcxOACfZgZF89obw%2B6kQYe%2B6o5X9U1X0qJ%2B7NtbcWvZz43rqEM3Yh8il%2F0NCDOXjk7E%2Bm7a%2FsjAGzeNbkBeCXeG6oahdxHeWYBy6nLRV3FH6%2F8%2Fx4yENSZzqLtNttJO%2Fy7EcysL6TgRnTZszUh%2FpPqn0uahbp%2BU7Lc4OrTeKaOio2AOlqYnccWgGAV4XhClP6BQ5RG0v0XMJwfnjvuSPsKvvDQ0MQa6qNfG9w%3D',
+   //    url: url
+   // }];
+   // await page.setCookie(...cookies);
+
 
 // scrapes for playoffs attendence
 if (0){
-   var target = 'http://games.espn.com/ffl/standings?leagueId=170051&seasonId='+season;
-   var j = request.jar();
-   var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
+   let target = 'http://games.espn.com/ffl/standings?leagueId=170051&seasonId='+season;
+   let j = request.jar();
+   let cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
    j.setCookie(cookie,target);
    cookie = request.cookie('SWID={8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}');
    j.setCookie(cookie,target);
@@ -81,9 +139,9 @@ function getManagers(season){
 if(0) {
    getManagers(season).then((managers)=>{
       managers.forEach((manager)=>{
-         var target = 'http://games.espn.com/ffl/schedule?leagueId=170051&seasonId='+season+'&teamId='+manager.num;
-         var j = request.jar();
-         var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
+         let target = 'http://games.espn.com/ffl/schedule?leagueId=170051&seasonId='+season+'&teamId='+manager.num;
+         let j = request.jar();
+         let cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
          j.setCookie(cookie,target);
          cookie = request.cookie('SWID={8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}');
          j.setCookie(cookie,target);
@@ -151,21 +209,21 @@ if(0) {
       });
    });
 }
-// var changeYear = [2009,2011,2012,2018];
-// var formats = {
+// let changeYear = [2009,2011,2012,2018];
+// let formats = {
 //    2009: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','k'],
 //    2011: ['qb','rb1','rb2','wr1','wr2','wr3te','dst','k'],
 //    2012: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','k'],
 //    2017: ['qb','rb1','rb2','wr1','wr2','wr3te','idp1','idp2','idp3','flex'],
 // };
-// var year = 2017, outp = '';
+// let year = 2017, outp = '';
 //
 // formats[changeYear.reduce((store,yr)=>(yr<=year)?yr:store)].forEach(function(position){
 //    outp += '<td>'+position.replace(/[0-9]/g, '').toUpperCase()+'</td>';
 // });
 // console.log(outp);
 
-// var managers = {
+// let managers = {
 //    MLRS : 'aaron',
 //    Puff : 'kirk',
 //    MCGE : 'john',
@@ -181,9 +239,9 @@ if(0) {
 //    CCCC : 'matt'
 // };
 
-// var target = 'http://games.espn.com/ffl/recentactivity?leagueId=170051&seasonId=2018&activityType=-1&startDate=20180826&endDate=20180826&teamId=-1&tranType=-2';
-// var j = request.jar();
-// var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
+// let target = 'http://games.espn.com/ffl/recentactivity?leagueId=170051&seasonId=2018&activityType=-1&startDate=20180826&endDate=20180826&teamId=-1&tranType=-2';
+// let j = request.jar();
+// let cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
 // j.setCookie(cookie,target);
 // cookie = request.cookie('SWID={8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}');
 // j.setCookie(cookie,target);

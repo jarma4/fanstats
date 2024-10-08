@@ -1,0 +1,43 @@
+.groupbox {
+    padding: 10px;
+	 margin-top: 5px;
+    margin-right: 0;
+    margin-bottom: 0px;
+    margin-left: 0;
+	 border: 2px #ccc solid;
+	 border-radius: 10px;
+ }
+
+.powerbar {
+	background-color: #444;
+	color: #ccc;
+	padding: 10px;
+	border-radius: 10px;
+}
+.powerbar img {
+   margin-botom: 15px;
+}
+.grapharea {
+	background-color: rgba(147, 197, 75, .8);
+	color: white;
+	padding-top: 10px;
+	border-radius: 10px;
+}
+.dataarea {
+	border: solid black 1px;
+	border-radius: 10px;
+}
+#dataHeading1, #dataHeading2{
+	/* display: inline-block; */
+   font-style: italic;
+   font-weight: bold;
+}
+.btn-primary {
+	background-color: #244363;
+}
+.top {
+	margin-top: 10px;
+}
+.sort {
+   color: red;
+}

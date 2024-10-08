@@ -6,6 +6,7 @@ var request = require('request'),
    // Players = require('./dbschema').Players,
    League = require('./dbschema').League,
    Draft = require('./dbschema').Draft,
+   Util = require('./util'),
    mongoose = require('mongoose');
 
 var managers = [
@@ -189,7 +190,81 @@ module.exports = {
                });
             }
       });
-   },
+	},
+	scrapeStreak: (season) => {
+		Util.getManagers(season).then((managers)=>{
+			managers.forEach((manager)=>{
+				var target = 'http://games.espn.com/ffl/schedule?leagueId=170051&seasonId='+season+'&teamId='+manager.num;
+				var j = request.jar();
+				var cookie = request.cookie('espnAuth={"swid":"{8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}"}');
+				j.setCookie(cookie,target);
+				cookie = request.cookie('SWID={8B16EBB9-CBBA-48C9-8092-10FDEE6C2662}');
+				j.setCookie(cookie,target);
+				cookie = request.cookie('espn_s2=AEBxSaW9ycfd5NvriDQOIas67vT98OWcxOACfZgZF89obw%2B6kQYe%2B6o5X9U1X0qJ%2B7NtbcWvZz43rqEM3Yh8il%2F0NCDOXjk7E%2Bm7a%2FsjAGzeNbkBeCXeG6oahdxHeWYBy6nLRV3FH6%2F8%2Fx4yENSZzqLtNttJO%2Fy7EcysL6TgRnTZszUh%2FpPqn0uahbp%2BU7Lc4OrTeKaOio2AOlqYnccWgGAV4XhClP6BQ5RG0v0XMJwfnjvuSPsKvvDQ0MQa6qNfG9w%3D');
+				j.setCookie(cookie,target);
+				request({
+					'url':target,
+					'jar': j
+				}, function (err, response, body) {
+					if(!err && response.statusCode === 200) {
+						console.log('found page')
+						let $ = cheerio.load(body);
+						let txt, mgr, player, pick = 217;
+							// find table
+							$('.bodyCopy').each(function(){
+								let maxWin=0, maxLose=0, wlast=0, wtmp=0, llast=0, ltmp=0, type='start', startStreak;
+								// step through 13 weeks in table
+								$(this).next().children().children().next().next().slice(0,13).each(function(index){
+									let record = $(this).children().next().first().text().split('-');
+									// start streak check
+									if (type == 'start' && record[0] === '0')
+										type = 'lose';
+									else if (type == 'start')
+										type = 'win';
+									if ((type == 'win' && record[1] !== '0') || (type == 'lose' && record[0] !== '0')) {
+										startStreak = index;
+										if (type == 'lose')
+											startStreak = -startStreak;
+										type = 'done';
+									}
+	
+									//check max win streak
+									if (Number(record[0]) > wlast)
+										++wtmp;
+									else
+										wtmp = 0;
+									if (wtmp > maxWin)
+										maxWin = wtmp;
+									wlast = Number(record[0]);
+	
+									// check max lose streak
+									if (Number(record[1]) > llast)
+										++ltmp;
+									else
+										ltmp = 0;
+									if (ltmp > maxLose)
+										maxLose = ltmp;
+									llast = Number(record[1]);
+									// console.log(record[0]+'-'+record[1]+' maxWin:'+maxWin+' maxlose:'+maxLose);
+								});
+								new Streak({
+									season: season,
+									manager: manager.name,
+									num: manager.num,
+									start: startStreak,
+									longestWin: maxWin,
+									longestLose: maxLose
+								}).save(function(err){
+									if(err)
+										console.log('Trouble adding stat: '+err);
+								});
+								console.log(manager.name+' start:'+startStreak+' win:'+maxWin+' maxLose:'+maxLose);
+							});
+						}
+				});
+			});
+		});
+	},
    getWeek: function(date){
       var seasonStart = new Date(2018,8,5),
          dayTicks = 24 * 60 * 60 * 1000,
